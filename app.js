@@ -100,6 +100,7 @@ let state = {
   weightInput: "",
   streak: 0,
   slideDirection: null,
+  animateItems: true,
   lastToggled: null
 };
 
@@ -202,6 +203,7 @@ async function saveWeight() {
 
 function changeDate(off) {
   _pendingScroll = null; // new day = scroll to top
+  state.animateItems = true;
   state.slideDirection = off > 0 ? "left" : "right";
   const d = new Date(state.date);
   d.setDate(d.getDate() + off);
@@ -213,6 +215,7 @@ function changeDate(off) {
 
 function goToday() {
   _pendingScroll = null; // new day = scroll to top
+  state.animateItems = true;
   state.slideDirection = null;
   state.date = new Date();
   state.showDetail = null;
@@ -391,7 +394,7 @@ function render() {
         ? (isRest ? "יום מנוחה — אין אימון היום" : `אימון ${CYCLE_LABELS[ct]}${aero ? " + 30 דק׳ אירובי (דופק 130-140)" : ""}\nסדר: משקולות ← אירובי`)
         : item.detail;
 
-      html += `<div class="tl-item fade-up" style="animation-delay:${idx * 0.03}s">
+      html += `<div class="tl-item${state.animateItems ? " fade-up" : ""}" style="${state.animateItems ? "animation-delay:" + (idx * 0.03) + "s" : ""}">
         <div class="tl-dot">
           <div class="check" data-check-id="${item.id}" onclick="toggleComplete('${item.id}')" style="background:${done ? col.accent : "rgba(255,255,255,0.04)"};border:2px solid ${done ? col.accent : "rgba(255,255,255,0.15)"}">
             ${done ? "✓" : ""}
@@ -524,10 +527,13 @@ function render() {
     const inp = document.getElementById("noteInput");
     if (inp) inp.focus();
   }
+
+  // Only animate items on first render / day change, not on toggles
+  state.animateItems = false;
 }
 
 // ── UI helpers ──
-function setState(k, v) { _pendingScroll = null; state[k] = v; render(); }
+function setState(k, v) { _pendingScroll = null; state.animateItems = true; state[k] = v; render(); }
 function toggleDetail(id) { saveScrollPosition(); state.showDetail = state.showDetail === id ? null : id; state.editingNote = null; render(); }
 function startEdit(id, existing) { saveScrollPosition(); state.editingNote = id; state.noteText = existing; render(); }
 function updateWeightBtn() {
