@@ -494,18 +494,23 @@ function render() {
   // Update header (never touches scroll container)
   document.getElementById("header-root").innerHTML = headerHtml;
 
-  // Update content
+  // Update content — always save current scroll before replacing
   const scrollContainer = document.getElementById("content-root");
+  const scrollBefore = scrollContainer.scrollTop;
+  // Use interaction-time snapshot if available, otherwise use current scroll
+  const restoreScroll = _pendingScroll !== null ? _pendingScroll : scrollBefore;
+
   const contentInner = document.getElementById("content-inner");
   contentInner.innerHTML = html;
   contentInner.className = "content-inner " + slideClass;
 
-  // Restore scroll from interaction-time snapshot
-  if (_pendingScroll !== null) {
-    const target = _pendingScroll;
-    scrollContainer.scrollTop = target;
-    requestAnimationFrame(() => { scrollContainer.scrollTop = target; });
-  }
+  // Restore scroll aggressively — covers sync render, async render, and browser paint
+  scrollContainer.scrollTop = restoreScroll;
+  setTimeout(() => { scrollContainer.scrollTop = restoreScroll; }, 0);
+  requestAnimationFrame(() => {
+    scrollContainer.scrollTop = restoreScroll;
+    requestAnimationFrame(() => { scrollContainer.scrollTop = restoreScroll; });
+  });
 
   // Post-render: checkbox pop animation
   if (state.lastToggled) {
@@ -522,9 +527,9 @@ function render() {
 }
 
 // ── UI helpers ──
-function setState(k, v) { state[k] = v; render(); }
-function toggleDetail(id) { state.showDetail = state.showDetail === id ? null : id; state.editingNote = null; render(); }
-function startEdit(id, existing) { state.editingNote = id; state.noteText = existing; render(); }
+function setState(k, v) { _pendingScroll = null; state[k] = v; render(); }
+function toggleDetail(id) { saveScrollPosition(); state.showDetail = state.showDetail === id ? null : id; state.editingNote = null; render(); }
+function startEdit(id, existing) { saveScrollPosition(); state.editingNote = id; state.noteText = existing; render(); }
 function updateWeightBtn() {
   const b = document.getElementById("weightBtn");
   if (b) b.className = "weight-btn " + (state.weightInput ? "ready" : "idle");
