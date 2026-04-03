@@ -377,7 +377,7 @@ function render() {
     // Weight input
     html += `<div class="weight-box">
       <span style="font-size:18px">⚖️</span>
-      <input type="number" step="0.1" id="weightIn" placeholder="${d.weight ? d.weight + ' ק"ג ✓' : 'משקל בוקר (ק"ג)'}" value="${state.weightInput}" oninput="state.weightInput=this.value;updateWeightBtn()">
+      <input type="number" step="0.1" id="weightIn" placeholder="${d.weight ? d.weight + ' ק"ג ✓' : 'משקל בוקר'}" value="${state.weightInput}" oninput="state.weightInput=this.value;updateWeightBtn()">
       <button class="weight-btn ${state.weightInput ? "ready" : "idle"}" id="weightBtn" onclick="saveWeight()">שמור</button>
     </div>`;
 
