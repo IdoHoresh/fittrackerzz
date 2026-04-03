@@ -396,7 +396,7 @@ function render() {
 
       html += `<div class="tl-item${state.animateItems ? " fade-up" : ""}" style="${state.animateItems ? "animation-delay:" + (idx * 0.03) + "s" : ""}">
         <div class="tl-dot">
-          <div class="check" data-check-id="${item.id}" onclick="toggleComplete('${item.id}')" style="background:${done ? col.accent : "rgba(255,255,255,0.04)"};border:2px solid ${done ? col.accent : "rgba(255,255,255,0.15)"}">
+          <div class="check${done ? " on" : ""}" data-check-id="${item.id}" onclick="toggleComplete('${item.id}')" style="background:${done ? col.accent : "rgba(255,255,255,0.04)"};border:2px solid ${done ? col.accent : "rgba(255,255,255,0.1)"}">
             ${done ? "✓" : ""}
           </div>
         </div>
