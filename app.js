@@ -85,6 +85,9 @@ function dbGetAll() {
   });
 }
 
+// Scroll position saved at interaction time, survives across async renders
+let _pendingScroll = null;
+
 // ── State ──
 let state = {
   date: new Date(),
@@ -161,7 +164,13 @@ async function calculateStreak() {
 }
 
 // ── Actions ──
+function saveScrollPosition() {
+  const el = document.getElementById("content-root");
+  if (el) _pendingScroll = el.scrollTop;
+}
+
 function toggleComplete(id) {
+  saveScrollPosition();
   state.dayData.completed[id] = !state.dayData.completed[id];
   state.lastToggled = id;
 
@@ -174,6 +183,7 @@ function toggleComplete(id) {
 }
 
 function saveNote(id) {
+  saveScrollPosition();
   state.dayData.notes[id] = state.noteText;
   state.editingNote = null;
   state.noteText = "";
@@ -182,6 +192,7 @@ function saveNote(id) {
 
 async function saveWeight() {
   if (!state.weightInput) return;
+  saveScrollPosition();
   state.dayData.weight = state.weightInput;
   state.weightInput = "";
   await dbPut(state.dayData);
@@ -190,6 +201,7 @@ async function saveWeight() {
 }
 
 function changeDate(off) {
+  _pendingScroll = null; // new day = scroll to top
   state.slideDirection = off > 0 ? "left" : "right";
   const d = new Date(state.date);
   d.setDate(d.getDate() + off);
@@ -200,6 +212,7 @@ function changeDate(off) {
 }
 
 function goToday() {
+  _pendingScroll = null; // new day = scroll to top
   state.slideDirection = null;
   state.date = new Date();
   state.showDetail = null;
@@ -305,22 +318,20 @@ function render() {
   const isComplete = pct === 100;
   const isToday = dateStr(state.date) === dateStr(new Date());
 
-  let html = "";
-
-  // Header
-  html += `<div class="header"><div class="header-inner">
+  // Header — rendered into permanent #header-root
+  const headerHtml = `<div class="header-inner">
     <div class="tabs">
       <button class="tab ${state.view === "today" ? "active" : ""}" onclick="setState('view','today')">📋 יומי</button>
       <button class="tab ${state.view === "weight" ? "active" : ""}" onclick="setState('view','weight');loadWeights().then(render)">⚖️ משקל</button>
     </div>
     <div class="logo"><span>FIT</span><span>TRACK</span></div>
-  </div></div>`;
+  </div>`;
 
   // Determine slide class
   const slideClass = state.slideDirection === "left" ? "slide-in-left" : state.slideDirection === "right" ? "slide-in-right" : "";
   state.slideDirection = null;
 
-  html += `<div class="content"><div class="content-inner ${slideClass}">`;
+  let html = "";
 
   if (state.view === "today") {
     // Date nav
@@ -480,17 +491,21 @@ function render() {
     html += `</div>`;
   }
 
-  html += `</div></div>`;
+  // Update header (never touches scroll container)
+  document.getElementById("header-root").innerHTML = headerHtml;
 
-  // Save scroll position before replacing DOM
-  const scrollEl = document.querySelector(".content");
-  const scrollTop = scrollEl ? scrollEl.scrollTop : 0;
+  // Update content
+  const scrollContainer = document.getElementById("content-root");
+  const contentInner = document.getElementById("content-inner");
+  contentInner.innerHTML = html;
+  contentInner.className = "content-inner " + slideClass;
 
-  document.getElementById("app").innerHTML = html;
-
-  // Restore scroll position
-  const newScrollEl = document.querySelector(".content");
-  if (newScrollEl) newScrollEl.scrollTop = scrollTop;
+  // Restore scroll from interaction-time snapshot
+  if (_pendingScroll !== null) {
+    const target = _pendingScroll;
+    scrollContainer.scrollTop = target;
+    requestAnimationFrame(() => { scrollContainer.scrollTop = target; });
+  }
 
   // Post-render: checkbox pop animation
   if (state.lastToggled) {
