@@ -481,7 +481,16 @@ function render() {
   }
 
   html += `</div></div>`;
+
+  // Save scroll position before replacing DOM
+  const scrollEl = document.querySelector(".content");
+  const scrollTop = scrollEl ? scrollEl.scrollTop : 0;
+
   document.getElementById("app").innerHTML = html;
+
+  // Restore scroll position
+  const newScrollEl = document.querySelector(".content");
+  if (newScrollEl) newScrollEl.scrollTop = scrollTop;
 
   // Post-render: checkbox pop animation
   if (state.lastToggled) {
