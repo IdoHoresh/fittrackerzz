@@ -1401,6 +1401,24 @@ openDB().then(async () => {
   initRipple();
   ensurePushSubscription();
 
+  // Refresh data when app comes back to foreground
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      // Update steps, now marker, and reload day data
+      if (state.view === "today") {
+        loadSteps(dateStr(state.date));
+        positionNowMarker();
+      }
+      // If date changed while away (e.g., opened next day), reload
+      const now = new Date();
+      if (dateStr(state.date) !== dateStr(now) && dateStr(state.date) === dateStr(new Date(Date.now() - 864e5))) {
+        state.date = now;
+        state.animateItems = true;
+        loadDay();
+      }
+    }
+  });
+
   // Update "now" marker every 60 seconds
   setInterval(() => {
     if (state.view === "today" && dateStr(state.date) === dateStr(new Date())) {
