@@ -149,11 +149,11 @@ const ACHIEVEMENTS = [
   { id: "weight-14", cat: "weight", icon: "⚖️", title: "שבועיים על המשקל", desc: "תעד משקל 14 ימים", target: 14, progress: d => d.weightDays, check: d => d.weightDays >= 14 },
   { id: "weight-30", cat: "weight", icon: "⚖️", title: "עוקב עקבי", desc: "תעד משקל 30 ימים", target: 30, progress: d => d.weightDays, check: d => d.weightDays >= 30 },
   // משקל — ירידה
-  { id: "lose-0.5", cat: "weight", icon: "🔻", title: "ההתחלה", desc: "ירדת חצי קילו", target: 5, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 0.5 },
-  { id: "lose-1", cat: "weight", icon: "🔻", title: "קילו ראשון", desc: "ירדת קילו", target: 10, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 1 },
-  { id: "lose-2", cat: "weight", icon: "🔻", title: "בדרך הנכונה", desc: "ירדת 2 קילו", target: 20, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 2 },
-  { id: "lose-3", cat: "weight", icon: "🔻", title: "שלושה למטה", desc: "ירדת 3 קילו", target: 30, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 3 },
-  { id: "lose-5", cat: "weight", icon: "🏅", title: "יעד הושג!", desc: "ירדת 5 קילו", target: 50, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 5 },
+  { id: "lose-0.5", cat: "weight", icon: "🔻", title: "ההתחלה", desc: "ירדת חצי קילו", target: 0.5, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 0.5 },
+  { id: "lose-1", cat: "weight", icon: "🔻", title: "קילו ראשון", desc: "ירדת קילו", target: 1, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 1 },
+  { id: "lose-2", cat: "weight", icon: "🔻", title: "בדרך הנכונה", desc: "ירדת 2 קילו", target: 2, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 2 },
+  { id: "lose-3", cat: "weight", icon: "🔻", title: "שלושה למטה", desc: "ירדת 3 קילו", target: 3, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 3 },
+  { id: "lose-5", cat: "weight", icon: "🏅", title: "יעד הושג!", desc: "ירדת 5 קילו", target: 5, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 5 },
   // תזונה
   { id: "meals-half", cat: "nutrition", icon: "🥗", title: "חצי יום", desc: "השלם 5 משימות ביום", target: 1, progress: d => d.halfDays, check: d => d.halfDays >= 1 },
   { id: "meals-perfect", cat: "nutrition", icon: "🥗", title: "יום מושלם", desc: "השלם את כל 10 המשימות", target: 1, progress: d => d.perfectDays, check: d => d.perfectDays >= 1 },
@@ -880,7 +880,7 @@ function render() {
             <div class="ach-card-title">${ach.title}</div>
             <div class="ach-card-desc">${ach.desc}</div>
             ${!isUnlocked ? `<div class="ach-card-bar"><div class="ach-card-fill" style="width:${pct}%"></div></div>
-            <div class="ach-card-prog">${prog}/${ach.target}</div>` : `<div class="ach-card-date">הושג ${unlocked[ach.id]}</div>`}
+            <div class="ach-card-prog">${prog}/${ach.target}${ach.unit ? " " + ach.unit : ""}</div>` : `<div class="ach-card-date">הושג ${unlocked[ach.id]}</div>`}
           </div>
         </div>`;
       });
