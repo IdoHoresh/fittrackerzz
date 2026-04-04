@@ -851,14 +851,14 @@ function render() {
             const aUnlocked = unlocked[a.id] ? 1 : 0;
             const bUnlocked = unlocked[b.id] ? 1 : 0;
             if (aUnlocked !== bUnlocked) return bUnlocked - aUnlocked; // unlocked first
-            const aP = a.progress ? a.progress({ streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 }) / a.target : 0;
-            const bP = b.progress ? b.progress({ streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 }) / b.target : 0;
+            const aP = a.progress ? a.progress((state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 })) / a.target : 0;
+            const bP = b.progress ? b.progress((state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 })) / b.target : 0;
             return bP - aP; // highest progress first
           });
         html += `<div class="ach-cat-label">${cat.icon} ${cat.label}</div>`;
         catAchs.forEach(ach => {
           const isUnlocked = !!unlocked[ach.id];
-          const prog = isUnlocked ? ach.target : (ach.progress ? Math.min(ach.progress({ streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 }), ach.target) : 0);
+          const prog = isUnlocked ? ach.target : (ach.progress ? Math.min(ach.progress((state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 })), ach.target) : 0);
           const pct = Math.round((prog / ach.target) * 100);
           html += `<div class="ach-card ${isUnlocked ? "ach-unlocked" : "ach-locked"}">
             <div class="ach-card-icon">${ach.icon}</div>
@@ -1444,6 +1444,7 @@ async function getAchievementData() {
 
 async function checkAchievements() {
   const data = await getAchievementData();
+  state._achData = data; // cache for UI display
   const unlocked = loadUnlocked();
   let newlyUnlocked = [];
 
@@ -1763,6 +1764,7 @@ openDB().then(async () => {
   initSwipe();
   initRipple();
   ensurePushSubscription();
+  checkAchievements();
 
   // Refresh data when app comes back to foreground
   document.addEventListener("visibilitychange", () => {
