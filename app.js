@@ -416,8 +416,8 @@ function fireConfetti() {
 // ── Render ──
 function render() {
   const ds = dateStr(state.date);
-  const ct = cycleType(ds);
-  const aero = hasAerobic(ds);
+  const ct = state.dayData.workoutType || cycleType(ds);
+  const aero = state.dayData.hasAerobic !== undefined ? state.dayData.hasAerobic : hasAerobic(ds);
   const isRest = ct === "rest";
   const d = state.dayData;
   if (!d) return;
@@ -470,11 +470,12 @@ function render() {
       </div>`;
     }
 
-    // Badges
+    // Badges (tap to change workout type)
     html += `<div class="badges">
-      <div class="badge ${isRest ? "badge-rest" : "badge-workout"}">
+      <div class="badge ${isRest ? "badge-rest" : "badge-workout"} badge-tap" onclick="cycleWorkoutType()">
         <span style="font-size:18px">${CYCLE_EMOJI[ct]}</span>
         ${isRest ? "יום מנוחה" : "אימון " + CYCLE_LABELS[ct]}
+        <span class="badge-edit">✏️</span>
       </div>
       ${aero && !isRest ? `<div class="badge badge-aerobic"><span>🏃</span> 30 דק׳ אירובי</div>` : ""}
     </div>`;
@@ -641,6 +642,20 @@ function render() {
 
   // Only animate items on first render / day change, not on toggles
   state.animateItems = false;
+}
+
+function cycleWorkoutType() {
+  saveScrollPosition();
+  const current = state.dayData.workoutType || cycleType(dateStr(state.date));
+  const idx = CYCLE.indexOf(current);
+  const next = CYCLE[(idx + 1) % CYCLE.length];
+  state.dayData.workoutType = next;
+  // Update aerobic based on new type
+  const ds = dateStr(state.date);
+  const diff = Math.floor((new Date(ds) - new Date(START)) / 864e5);
+  const c = ((diff % 6) + 6) % 6;
+  state.dayData.hasAerobic = next !== "rest" && c < 3;
+  saveDay();
 }
 
 // ── UI helpers ──

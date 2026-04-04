@@ -50,6 +50,9 @@ input:focus{outline:none}
 .badge-workout{background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.25);color:var(--green)}
 .badge-rest{background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.25);color:var(--yellow)}
 .badge-aerobic{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);color:var(--blue);font-size:12px;font-weight:600}
+.badge-tap{cursor:pointer;transition:transform 0.15s}
+.badge-tap:active{transform:scale(0.95)}
+.badge-edit{font-size:11px;opacity:0.6}
 
 /* Progress */
 .progress-box{background:rgba(255,255,255,0.02);border-radius:16px;padding:14px 16px;border:1px solid var(--border);margin-bottom:14px;transition:box-shadow 0.5s,border-color 0.5s}
