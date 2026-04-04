@@ -11,12 +11,19 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMGExMDFhIi8+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRjYWY1MCI+8J+Prjwv dGV4dD48L3N2Zz4=">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="styles.css?v=15">
+<link rel="stylesheet" href="styles.css?v=16">
 </head>
 <body>
 <div class="app">
   <div class="header" id="header-root"></div>
   <div class="content" id="content-root"><div class="content-inner" id="content-inner"></div></div>
+</div>
+<div class="timer-bar" id="timer-bar" style="display:none">
+  <div class="timer-left" onclick="toggleTimer()">
+    <span class="timer-icon" id="timer-icon">▶</span>
+    <span class="timer-display" id="timer-display">00:00</span>
+  </div>
+  <button class="timer-reset" onclick="resetTimer()">Reset</button>
 </div>
 <canvas id="confetti-canvas"></canvas>
 <script>
@@ -24,6 +31,6 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(() => {});
 }
 </script>
-<script src="app.js?v=23"></script>
+<script src="app.js?v=24"></script>
 </body>
 </html>

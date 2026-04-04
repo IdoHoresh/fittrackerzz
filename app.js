@@ -1035,9 +1035,15 @@ function render() {
     if (inp) inp.focus();
   }
 
-  // Render workout progression chart
+  // Render workout progression chart + show timer
+  const timerBar = document.getElementById("timer-bar");
   if (state.view === "workout") {
     renderWorkoutChart();
+    if (timerBar) timerBar.style.display = "";
+    updateTimerDisplay();
+  } else {
+    if (timerBar) timerBar.style.display = "none";
+    stopTimer();
   }
 
   // Load steps for today
@@ -1273,6 +1279,67 @@ function positionNowMarker() {
   if (label) {
     label.textContent = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
   }
+}
+
+// ── Rest Timer (Stopwatch) ──
+let _timerInterval = null;
+state.timerRunning = false;
+state.timerStart = 0;
+state.timerElapsed = 0;
+
+function toggleTimer() {
+  if (state.timerRunning) {
+    // Pause
+    state.timerElapsed += (Date.now() - state.timerStart) / 1000;
+    state.timerStart = 0;
+    state.timerRunning = false;
+    clearInterval(_timerInterval);
+    _timerInterval = null;
+  } else {
+    // Start/Resume
+    state.timerStart = Date.now();
+    state.timerRunning = true;
+    _timerInterval = setInterval(updateTimerDisplay, 200);
+  }
+  updateTimerDisplay();
+}
+
+function resetTimer() {
+  state.timerRunning = false;
+  state.timerStart = 0;
+  state.timerElapsed = 0;
+  if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById("timer-display");
+  if (!el) return;
+  let total = state.timerElapsed;
+  if (state.timerRunning) total += (Date.now() - state.timerStart) / 1000;
+  const mins = Math.floor(total / 60);
+  const secs = Math.floor(total % 60);
+  el.textContent = mins.toString().padStart(2, "0") + ":" + secs.toString().padStart(2, "0");
+
+  // Update play/pause icon
+  const icon = document.getElementById("timer-icon");
+  if (icon) icon.textContent = state.timerRunning ? "⏸" : "▶";
+
+  // Update bar style
+  const bar = document.getElementById("timer-bar");
+  if (bar) bar.className = "timer-bar" + (state.timerRunning ? " timer-running" : "");
+
+  // Vibrate on minute marks
+  if (state.timerRunning && secs === 0 && mins > 0 && navigator.vibrate) {
+    navigator.vibrate(200);
+  }
+}
+
+function stopTimer() {
+  state.timerRunning = false;
+  state.timerStart = 0;
+  state.timerElapsed = 0;
+  if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
 }
 
 // ── Exercise Info Popup ──
