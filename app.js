@@ -26,6 +26,66 @@ const CAT_COLORS = {
 
 const DAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 
+// ── Shopping List ──
+const SHOP_CATEGORIES = [
+  { id: "produce", label: "ירקות ופירות", icon: "🥬", color: "#4caf50" },
+  { id: "protein", label: "חלבונים", icon: "🥩", color: "#ef4444" },
+  { id: "dairy", label: "מוצרי חלב", icon: "🧀", color: "#eab308" },
+  { id: "grains", label: "פחמימות", icon: "🌾", color: "#ff9800" },
+  { id: "snacks", label: "חטיפים ואחר", icon: "🥜", color: "#a855f7" }
+];
+
+// Quantities calculated for 2-week (14-day) meal plan cycle
+// breakfast(1 green veg) + lunch(2 veg, 1 green) + dinner(2 veg) = 5 veggies/day
+// 3 protein options rotate: cottage / white cheese / tuna+egg (each ~5x per 14 days)
+// yogurt: snack + night = 2/day, grains: 200g/day for lunch
+const SHOP_ITEMS = [
+  // Produce: 5 veggies/day × 14 = 70 total
+  { id: "s-green-veg", label: "ירקות ירוקים", qty: "~35", cat: "produce" },
+  { id: "s-vegetables", label: "ירקות (מלפפון, עגבניה, פלפל)", qty: "~40", cat: "produce" },
+  { id: "s-fruit", label: "פרי", qty: "14", cat: "produce" },
+  { id: "s-banana", label: "בננה", qty: "10", cat: "produce" },
+  { id: "s-avocado", label: "אבוקדו", qty: "7", cat: "produce" },
+
+  // Protein: lunch 250g/day rotating chicken/fish
+  { id: "s-chicken", label: "עוף / הודו", qty: "2.5 ק״ג", cat: "protein" },
+  { id: "s-fish", label: "דג / סלמון", qty: "1.5 ק״ג", cat: "protein" },
+  { id: "s-eggs", label: "ביצים", qty: "2 תבניות (24)", cat: "protein" },
+  { id: "s-tuna", label: "טונה (קופסאות)", qty: "10 קופסאות", cat: "protein" },
+  { id: "s-protein-powder", label: "אבקת חלבון", qty: "1 אריזה", cat: "protein" },
+
+  // Dairy: each option ~5x breakfast + ~5x dinner, yogurt 2/day
+  { id: "s-cottage", label: 'קוטג׳ 2%', qty: "10", cat: "dairy" },
+  { id: "s-white-cheese", label: "גבינה לבנה", qty: "7", cat: "dairy" },
+  { id: "s-protein-yogurt", label: "יוגורט חלבון", qty: "28", cat: "dairy" },
+  { id: "s-milk", label: "חלב", qty: "3 ליטר", cat: "dairy" },
+
+  // Grains: breakfast+dinner bread/rice cakes, lunch 200g/day = 2.8kg
+  { id: "s-bread", label: "לחם מלא", qty: "3 כיכרות", cat: "grains" },
+  { id: "s-rice-cakes", label: "פריכיות אורז", qty: "4 חבילות", cat: "grains" },
+  { id: "s-rice", label: "אורז", qty: "1 ק״ג", cat: "grains" },
+  { id: "s-bulgur", label: "בורגול", qty: "500 גרם", cat: "grains" },
+  { id: "s-buckwheat", label: "כוסמת", qty: "500 גרם", cat: "grains" },
+  { id: "s-quinoa", label: "קינואה", qty: "500 גרם", cat: "grains" },
+  { id: "s-lentils", label: "עדשים", qty: "500 גרם", cat: "grains" },
+
+  // Snacks & other
+  { id: "s-dates", label: "תמרים", qty: "2 חבילות (1 ק״ג)", cat: "snacks" },
+  { id: "s-almonds", label: "שקדים", qty: "1 חבילה (400 גרם)", cat: "snacks" },
+  { id: "s-walnuts", label: "אגוזי מלך", qty: "1 חבילה (300 גרם)", cat: "snacks" },
+  { id: "s-snack-bar", label: "חטיף עד 100 קל׳", qty: "14", cat: "snacks" },
+  { id: "s-tahini", label: "טחינה", qty: "1 צנצנת", cat: "snacks" },
+  { id: "s-peanut-butter", label: "חמאת בוטנים", qty: "1 צנצנת", cat: "snacks" },
+  { id: "s-coffee", label: "קפה", qty: "2 חבילות", cat: "snacks" }
+];
+
+// Shopping cycle: every 2 weeks starting 2026-04-05 (next Sunday)
+const SHOP_CYCLE_START = "2026-04-05";
+function isShoppingDay(ds) {
+  const diff = Math.floor((new Date(ds) - new Date(SHOP_CYCLE_START)) / 864e5);
+  return diff >= 0 && diff % 14 === 0;
+}
+
 // ── Helpers ──
 function dateStr(d) { return d.toISOString().split("T")[0]; }
 function dayName(d) { return DAYS[d.getDay()]; }
@@ -89,6 +149,19 @@ function dbGetAll() {
 // Scroll position saved at interaction time, survives across async renders
 let _pendingScroll = null;
 
+// ── Shopping Persistence ──
+function loadShopping() {
+  try {
+    const raw = localStorage.getItem("fittrack_shopping");
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { checked: {}, customItems: [] };
+}
+function saveShopping() {
+  localStorage.setItem("fittrack_shopping", JSON.stringify(state.shopping));
+}
+
+
 // ── State ──
 let state = {
   date: new Date(),
@@ -103,7 +176,10 @@ let state = {
   slideDirection: null,
   animateItems: true,
   lastToggled: null,
-  notificationsEnabled: localStorage.getItem("fittrack_notif") === "true"
+  notificationsEnabled: localStorage.getItem("fittrack_notif") === "true",
+  shopping: loadShopping(),
+  shopInput: "",
+  shopCat: "produce"
 };
 
 // ── Notifications ──
@@ -156,6 +232,32 @@ function scheduleNotifications() {
       showTaskNotification(item);
     }, delay);
   });
+
+  // Shopping day notification at 09:00
+  if (isShoppingDay(todayStr)) {
+    const shopTime = new Date(now);
+    shopTime.setHours(9, 0, 0, 0);
+    const shopDelay = shopTime - now;
+    if (shopDelay > 0) {
+      _notifTimers["_shopping"] = setTimeout(() => {
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: "showNotification",
+            title: "🛒 יום קניות!",
+            body: "הגיע הזמן להשלים את רשימת הקניות לשבועיים",
+            tag: "fittrack-shopping"
+          });
+        } else {
+          new Notification("🛒 יום קניות!", {
+            body: "הגיע הזמן להשלים את רשימת הקניות לשבועיים",
+            tag: "fittrack-shopping",
+            dir: "rtl",
+            lang: "he"
+          });
+        }
+      }, shopDelay);
+    }
+  }
 
   // Schedule midnight reschedule
   const midnight = new Date(now);
@@ -436,6 +538,7 @@ function render() {
     <div class="tabs">
       <button class="tab ${state.view === "today" ? "active" : ""}" onclick="setState('view','today')">📋 יומי</button>
       <button class="tab ${state.view === "weight" ? "active" : ""}" onclick="setState('view','weight');loadWeights().then(render)">⚖️ משקל</button>
+      <button class="tab ${state.view === "shopping" ? "active" : ""}" onclick="setState('view','shopping')">🛒 קניות</button>
     </div>
     <div class="header-right">
       <button class="notif-toggle ${state.notificationsEnabled ? "on" : ""}" onclick="toggleNotifications()" title="התראות">${bellIcon}</button>
@@ -475,6 +578,14 @@ function render() {
           <span class="fire">🔥</span>
           <span>${state.streak} ימים ברצף${isMilestone ? " 🏆" : ""}</span>
         </div>
+      </div>`;
+    }
+
+    // Shopping day reminder (every 2 weeks)
+    if (isShoppingDay(ds)) {
+      html += `<div class="shop-reminder fade-up" onclick="setState('view','shopping')">
+        <span class="shop-reminder-icon">🛒</span>
+        <div><div class="shop-reminder-title">יום קניות!</div><div class="shop-reminder-sub">הגיע הזמן להשלים את רשימת הקניות לשבועיים</div></div>
       </div>`;
     }
 
@@ -558,7 +669,7 @@ function render() {
       <div><div class="title">תזכורת מים</div><div class="sub">לפחות 3 ליטר + 500-750 מ"ל על שעת אימון</div></div>
     </div>`;
 
-  } else {
+  } else if (state.view === "weight") {
     // Weight view
     html += `<div class="weight-view"><h2>⚖️ מעקב משקל</h2>`;
     const wh = state.weightHistory;
@@ -620,6 +731,59 @@ function render() {
       });
       html += `</div>`;
     }
+    html += `</div>`;
+  } else if (state.view === "shopping") {
+    // Shopping list view
+    const sh = state.shopping;
+    const allItems = [...SHOP_ITEMS, ...sh.customItems];
+    const checkedCount = Object.keys(sh.checked).length;
+    const totalCount = allItems.length;
+
+    html += `<div class="shop-view">`;
+    html += `<div class="shop-header">
+      <h2>🛒 רשימת קניות</h2>
+      <div class="shop-header-right">
+        <span class="shop-counter">${checkedCount}/${totalCount}</span>
+        <button class="shop-reset-btn" onclick="resetShopping()">🔄 איפוס</button>
+      </div>
+    </div>`;
+
+    // Add item bar
+    html += `<div class="shop-add-bar">
+      <input type="text" id="shopInput" class="shop-add-input" placeholder="הוסף פריט..." value="${state.shopInput.replace(/"/g, "&quot;")}" oninput="state.shopInput=this.value" onkeydown="if(event.key==='Enter')addCustomItem()">
+      <select class="shop-add-cat" id="shopCatSelect" onchange="state.shopCat=this.value">
+        ${SHOP_CATEGORIES.map(c => `<option value="${c.id}" ${state.shopCat === c.id ? "selected" : ""}>${c.icon} ${c.label}</option>`).join("")}
+      </select>
+      <button class="shop-add-btn" onclick="addCustomItem()">הוסף</button>
+    </div>`;
+
+    // Render categories
+    SHOP_CATEGORIES.forEach((cat, catIdx) => {
+      const items = allItems.filter(i => i.cat === cat.id);
+      if (items.length === 0) return;
+
+      html += `<div class="shop-category stagger-in" style="animation-delay:${catIdx * 0.08}s">`;
+      html += `<div class="shop-cat-header" style="color:${cat.color};border-color:${cat.color}30">
+        <span class="shop-cat-icon">${cat.icon}</span>
+        <span>${cat.label}</span>
+      </div>`;
+
+      items.forEach((item, idx) => {
+        const checked = sh.checked[item.id];
+        const isCustom = item.id.startsWith("custom-");
+        html += `<div class="shop-item ${checked ? "shop-item-done" : ""} fade-up" style="animation-delay:${catIdx * 0.08 + idx * 0.02}s" onclick="toggleShopItem('${item.id}')">
+          <div class="shop-check ${checked ? "on" : ""}" style="border-color:${checked ? cat.color : "rgba(255,255,255,0.15)"};background:${checked ? cat.color : "transparent"}">
+            ${checked ? "✓" : ""}
+          </div>
+          <span class="shop-item-label ${checked ? "done" : ""}">${item.label}</span>
+          ${item.qty ? `<span class="shop-item-qty">${item.qty}</span>` : ""}
+          ${isCustom ? `<button class="shop-delete-btn" onclick="event.stopPropagation();removeCustomItem('${item.id}')">×</button>` : ""}
+        </div>`;
+      });
+
+      html += `</div>`;
+    });
+
     html += `</div>`;
   }
 
@@ -719,6 +883,40 @@ function cycleWorkoutType() {
   state.dayData.workoutType = next;
   state.dayData.hasAerobic = hasAerobic(ds);
   saveDay();
+}
+
+// ── Shopping Actions ──
+function toggleShopItem(id) {
+  if (state.shopping.checked[id]) {
+    delete state.shopping.checked[id];
+  } else {
+    state.shopping.checked[id] = true;
+  }
+  saveShopping();
+  render();
+}
+
+function addCustomItem() {
+  const label = state.shopInput.trim();
+  if (!label) return;
+  const id = "custom-" + Date.now();
+  state.shopping.customItems.push({ id, label, cat: state.shopCat });
+  state.shopInput = "";
+  saveShopping();
+  render();
+}
+
+function removeCustomItem(id) {
+  state.shopping.customItems = state.shopping.customItems.filter(i => i.id !== id);
+  delete state.shopping.checked[id];
+  saveShopping();
+  render();
+}
+
+function resetShopping() {
+  state.shopping.checked = {};
+  saveShopping();
+  render();
 }
 
 // ── UI helpers ──
