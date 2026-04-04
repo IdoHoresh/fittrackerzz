@@ -2,7 +2,7 @@
   "name": "FitTrack — עידו",
   "short_name": "FitTrack",
   "description": "מעקב כושר יומי",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "dir": "rtl",
