@@ -102,23 +102,22 @@ async function sendToAll(title, body, tag) {
 // ── Schedule: daily meal/task reminders ──
 // Times are in Israel timezone (Asia/Jerusalem)
 const SCHEDULE = [
-  { time: "30 7", label: "השכמה", icon: "☀️", tag: "wake" },
-  { time: "45 7", label: "ארוחת בוקר", icon: "🍳", tag: "meal1" },
-  { time: "0 8", label: "יציאה לעבודה", icon: "💼", tag: "work" },
-  { time: "30 12", label: "ארוחת צהריים", icon: "🥗", tag: "meal2" },
-  { time: "0 16", label: "ארוחת ביניים", icon: "🥜", tag: "meal3" },
-  { time: "0 19", label: "ארוחת ערב", icon: "🍽️", tag: "meal4" },
-  { time: "0 20", label: "אימון", icon: "🏋️", tag: "workout" },
-  { time: "30 22", label: "שייק אחרי אימון", icon: "🥤", tag: "shake" },
-  { time: "15 23", label: "ארוחת לילה", icon: "🌙", tag: "meal5" },
-  { time: "0 1", label: "שינה", icon: "😴", tag: "sleep" }
+  { cron: "30 7", display: "07:30", label: "השכמה", icon: "☀️", tag: "wake" },
+  { cron: "45 7", display: "07:45", label: "ארוחת בוקר", icon: "🍳", tag: "meal1" },
+  { cron: "0 8", display: "08:00", label: "יציאה לעבודה", icon: "💼", tag: "work" },
+  { cron: "30 12", display: "12:30", label: "ארוחת צהריים", icon: "🥗", tag: "meal2" },
+  { cron: "0 16", display: "16:00", label: "ארוחת ביניים", icon: "🥜", tag: "meal3" },
+  { cron: "0 19", display: "19:00", label: "ארוחת ערב", icon: "🍽️", tag: "meal4" },
+  { cron: "0 20", display: "20:00", label: "אימון", icon: "🏋️", tag: "workout" },
+  { cron: "30 22", display: "22:30", label: "שייק אחרי אימון", icon: "🥤", tag: "shake" },
+  { cron: "15 23", display: "23:15", label: "ארוחת לילה", icon: "🌙", tag: "meal5" },
+  { cron: "0 1", display: "01:00", label: "שינה", icon: "😴", tag: "sleep" }
 ];
 
 SCHEDULE.forEach(item => {
-  // Cron: minute hour * * * (runs daily)
-  cron.schedule(`${item.time} * * *`, () => {
-    console.log(`[cron] Sending: ${item.icon} ${item.label}`);
-    sendToAll(`${item.icon} ${item.label}`, item.time.split(" ").reverse().join(":"), `fittrack-${item.tag}`);
+  cron.schedule(`${item.cron} * * *`, () => {
+    console.log(`[cron] Sending: ${item.icon} ${item.label} (${item.display})`);
+    sendToAll(`${item.icon} ${item.label}`, item.display, `fittrack-${item.tag}`);
   }, { timezone: "Asia/Jerusalem" });
 });
 
