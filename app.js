@@ -763,10 +763,10 @@ function render() {
     html += `</div>`;
 
     // Steps
-    html += `<div class="steps-box" id="steps-box">
+    html += `<div class="steps-box" id="steps-box" onclick="syncSteps()">
       <span class="steps-icon">👟</span>
       <div class="steps-info">
-        <div class="steps-label">צעדים היום</div>
+        <div class="steps-label">צעדים היום <span class="steps-sync" id="steps-sync">🔄 סנכרון</span></div>
         <div class="steps-val" id="steps-val">—</div>
       </div>
     </div>`;
@@ -1203,8 +1203,28 @@ async function loadSteps(ds) {
     const resp = await fetch(PUSH_SERVER + "/api/steps?date=" + ds);
     const data = await resp.json();
     const el = document.getElementById("steps-val");
-    if (el) el.textContent = data.steps > 0 ? data.steps.toLocaleString() : "—";
+    if (el) {
+      const prev = el.textContent;
+      const newVal = data.steps > 0 ? data.steps.toLocaleString() : "—";
+      el.textContent = newVal;
+      // Flash green if updated
+      if (prev !== newVal && prev !== "—") el.classList.add("number-bump");
+    }
   } catch (e) {}
+}
+
+function syncSteps() {
+  // Open the Shortcut to sync steps from Health, then refresh
+  const syncBtn = document.getElementById("steps-sync");
+  if (syncBtn) syncBtn.textContent = "⏳";
+  window.location.href = "shortcuts://run-shortcut?name=Sync%20Steps";
+  // Poll for update after shortcut runs
+  setTimeout(() => loadSteps(dateStr(state.date)), 3000);
+  setTimeout(() => loadSteps(dateStr(state.date)), 6000);
+  setTimeout(() => loadSteps(dateStr(state.date)), 10000);
+  setTimeout(() => {
+    if (syncBtn) syncBtn.textContent = "🔄 סנכרון";
+  }, 10000);
 }
 
 // ── Now Marker ──
@@ -1419,10 +1439,15 @@ openDB().then(async () => {
     }
   });
 
-  // Update "now" marker every 60 seconds
+  // Update "now" marker every 60 seconds and steps every 30 seconds
   setInterval(() => {
     if (state.view === "today" && dateStr(state.date) === dateStr(new Date())) {
       positionNowMarker();
     }
   }, 60000);
+  setInterval(() => {
+    if (state.view === "today" && document.visibilityState === "visible") {
+      loadSteps(dateStr(state.date));
+    }
+  }, 30000);
 });

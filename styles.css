@@ -127,6 +127,9 @@ input:focus{outline:none}
 .steps-icon{font-size:24px}
 .steps-label{font-weight:600;font-size:13.5px;color:#a78bfa}
 .steps-val{font-size:22px;font-weight:800;color:var(--text);margin-top:2px}
+.steps-box{cursor:pointer;transition:transform 0.15s}
+.steps-box:active{transform:scale(0.98)}
+.steps-sync{font-size:10px;color:var(--text3);font-weight:400;margin-right:6px}
 
 /* Water */
 .water-box{margin-top:18px;background:rgba(59,130,246,0.05);border-radius:16px;border:1px solid rgba(59,130,246,0.12);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:24px}
