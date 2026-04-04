@@ -22,7 +22,8 @@ input:focus{outline:none}
 .notif-toggle:active{transform:scale(0.9)}
 
 /* Content */
-.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px;padding-bottom:calc(var(--safe-bottom) + 20px)}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 16px;padding-bottom:calc(var(--safe-bottom) + 20px);scrollbar-width:none;-ms-overflow-style:none}
+.content::-webkit-scrollbar{display:none}
 .content-inner{max-width:600px;margin:0 auto}
 
 /* Date Nav */
