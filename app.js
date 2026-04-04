@@ -197,29 +197,57 @@ function urlBase64ToUint8Array(base64String) {
 
 async function toggleNotifications() {
   if (!state.notificationsEnabled) {
-    // Turning on — request permission + subscribe to push
-    if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
+    // Check: is this a PWA on home screen? (iOS requires it)
+    const isStandalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    if (isIOS && !isStandalone) {
+      alert("כדי לקבל התראות באייפון:\n1. לחץ על כפתור השיתוף (⬆️)\n2. בחר ״הוסף למסך הבית״\n3. פתח את האפליקציה מהמסך הראשי\n4. לחץ שוב על 🔔");
+      return;
+    }
+
+    if (!("Notification" in window)) {
+      alert("הדפדפן לא תומך בהתראות");
+      return;
+    }
+    if (!("serviceWorker" in navigator)) {
+      alert("Service Worker לא זמין");
+      return;
+    }
+
     const perm = await Notification.requestPermission();
-    if (perm !== "granted") return;
+    if (perm !== "granted") {
+      alert("ההתראות נחסמו. אפשר אותן בהגדרות הדפדפן/מכשיר");
+      return;
+    }
 
     try {
       const reg = await navigator.serviceWorker.ready;
+
+      if (!reg.pushManager) {
+        alert("Push API לא זמין במכשיר זה");
+        return;
+      }
+
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
 
       // Send subscription to push server
-      await fetch(PUSH_SERVER + "/api/subscribe", {
+      const resp = await fetch(PUSH_SERVER + "/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sub)
       });
 
+      if (!resp.ok) throw new Error("Server returned " + resp.status);
+
       state.notificationsEnabled = true;
       localStorage.setItem("fittrack_notif", "true");
     } catch (err) {
       console.error("Push subscription failed:", err);
+      alert("שגיאה בהרשמה להתראות:\n" + err.message);
     }
   } else {
     // Turning off — unsubscribe
