@@ -122,6 +122,7 @@ const WORKOUTS = {
 // ── Achievements ──
 const ACHIEVEMENTS = [
   // Consistency
+  { id: "streak-3", cat: "consistency", icon: "🔥", title: "התחלה חזקה", desc: "רצף של 3 ימים", target: 3, progress: d => d.streak, check: d => d.streak >= 3 },
   { id: "streak-7", cat: "consistency", icon: "🔥", title: "לוחם שבועי", desc: "רצף של 7 ימים", target: 7, progress: d => d.streak, check: d => d.streak >= 7 },
   { id: "streak-14", cat: "consistency", icon: "🔥", title: "חיה של שבועיים", desc: "רצף של 14 ימים", target: 14, progress: d => d.streak, check: d => d.streak >= 14 },
   { id: "streak-30", cat: "consistency", icon: "🔥", title: "מכונה חודשית", desc: "רצף של 30 ימים", target: 30, progress: d => d.streak, check: d => d.streak >= 30 },
@@ -129,19 +130,28 @@ const ACHIEVEMENTS = [
   { id: "streak-100", cat: "consistency", icon: "🔥", title: "בלתי ניתן לעצירה", desc: "רצף של 100 ימים", target: 100, progress: d => d.streak, check: d => d.streak >= 100 },
   // כוח
   { id: "first-workout", cat: "strength", icon: "💪", title: "יום ראשון", desc: "תעד את האימון הראשון", target: 1, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 1 },
+  { id: "workouts-2", cat: "strength", icon: "💪", title: "חוזר לעוד", desc: "2 אימונים", target: 2, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 2 },
+  { id: "workouts-5", cat: "strength", icon: "💪", title: "שבוע ראשון בחדר", desc: "5 אימונים", target: 5, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 5 },
   { id: "first-pr", cat: "strength", icon: "🏆", title: "דם ראשון", desc: "שבור שיא אישי ראשון", target: 1, progress: d => d.totalPRs, check: d => d.totalPRs >= 1 },
   { id: "pr-5", cat: "strength", icon: "🏆", title: "צייד שיאים", desc: "5 שיאים אישיים", target: 5, progress: d => d.totalPRs, check: d => d.totalPRs >= 5 },
   { id: "pr-10", cat: "strength", icon: "🏆", title: "מכונת שיאים", desc: "10 שיאים אישיים", target: 10, progress: d => d.totalPRs, check: d => d.totalPRs >= 10 },
   { id: "pr-25", cat: "strength", icon: "🏆", title: "אגדת שיאים", desc: "25 שיאים אישיים", target: 25, progress: d => d.totalPRs, check: d => d.totalPRs >= 25 },
   // צעדים
+  { id: "steps-3k", cat: "steps", icon: "👟", title: "צעדים ראשונים", desc: "3,000 צעדים ביום", target: 3000, progress: d => d.todaySteps, check: d => d.todaySteps >= 3000 },
   { id: "steps-5k", cat: "steps", icon: "👟", title: "מתחילים לזוז", desc: "5,000 צעדים ביום", target: 5000, progress: d => d.todaySteps, check: d => d.todaySteps >= 5000 },
+  { id: "steps-7k", cat: "steps", icon: "👟", title: "הולך יפה", desc: "7,000 צעדים ביום", target: 7000, progress: d => d.todaySteps, check: d => d.todaySteps >= 7000 },
   { id: "steps-10k", cat: "steps", icon: "👟", title: "אלוף הצעדים", desc: "10,000 צעדים ביום", target: 10000, progress: d => d.todaySteps, check: d => d.todaySteps >= 10000 },
   { id: "steps-15k", cat: "steps", icon: "👟", title: "רץ הכביש", desc: "15,000 צעדים ביום", target: 15000, progress: d => d.todaySteps, check: d => d.todaySteps >= 15000 },
   // משקל
   { id: "weight-first", cat: "weight", icon: "⚖️", title: "בדיקת משקל", desc: "תעד משקל ראשון", target: 1, progress: d => d.weightDays, check: d => d.weightDays >= 1 },
+  { id: "weight-3", cat: "weight", icon: "⚖️", title: "שלושה ימים", desc: "תעד משקל 3 ימים", target: 3, progress: d => d.weightDays, check: d => d.weightDays >= 3 },
+  { id: "weight-7", cat: "weight", icon: "⚖️", title: "שבוע על המשקל", desc: "תעד משקל 7 ימים", target: 7, progress: d => d.weightDays, check: d => d.weightDays >= 7 },
+  { id: "weight-14", cat: "weight", icon: "⚖️", title: "שבועיים על המשקל", desc: "תעד משקל 14 ימים", target: 14, progress: d => d.weightDays, check: d => d.weightDays >= 14 },
   { id: "weight-30", cat: "weight", icon: "⚖️", title: "עוקב עקבי", desc: "תעד משקל 30 ימים", target: 30, progress: d => d.weightDays, check: d => d.weightDays >= 30 },
   // תזונה
+  { id: "meals-half", cat: "nutrition", icon: "🥗", title: "חצי יום", desc: "השלם 5 משימות ביום", target: 1, progress: d => d.halfDays, check: d => d.halfDays >= 1 },
   { id: "meals-perfect", cat: "nutrition", icon: "🥗", title: "יום מושלם", desc: "השלם את כל 10 המשימות", target: 1, progress: d => d.perfectDays, check: d => d.perfectDays >= 1 },
+  { id: "meals-perfect-3", cat: "nutrition", icon: "🥗", title: "שלושה מושלמים", desc: "3 ימים מושלמים", target: 3, progress: d => d.perfectDays, check: d => d.perfectDays >= 3 },
   { id: "meals-week", cat: "nutrition", icon: "🥗", title: "שבוע מלא", desc: "7 ימים מושלמים", target: 7, progress: d => d.perfectDays, check: d => d.perfectDays >= 7 },
   { id: "meals-50", cat: "nutrition", icon: "🥗", title: "גיבור חצי הדרך", desc: "50 ימים מושלמים", target: 50, progress: d => d.perfectDays, check: d => d.perfectDays >= 50 },
   { id: "meals-100", cat: "nutrition", icon: "🥗", title: "מועדון המאה", desc: "100 ימים מושלמים", target: 100, progress: d => d.perfectDays, check: d => d.perfectDays >= 100 },
@@ -845,7 +855,7 @@ function render() {
 
     if (state.showAchievements) {
       html += `<div class="ach-list">`;
-      const achData = state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 };
+      const achData = state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, halfDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 };
       const allAchs = [...ACHIEVEMENTS].sort((a, b) => {
         const aUnlocked = unlocked[a.id] ? 1 : 0;
         const bUnlocked = unlocked[b.id] ? 1 : 0;
@@ -1406,14 +1416,14 @@ function saveUnlocked(u) { localStorage.setItem("fittrack_achievements", JSON.st
 
 async function getAchievementData() {
   const all = await dbGetAll();
-  let totalWorkouts = 0, perfectDays = 0, weightDays = 0, totalPRs = 0;
-  const prSet = new Set();
+  let totalWorkouts = 0, perfectDays = 0, halfDays = 0, weightDays = 0, totalPRs = 0;
 
   for (const day of all) {
     if (day.workoutLog && Object.keys(day.workoutLog).length > 0) totalWorkouts++;
     if (day.weight) weightDays++;
     const completed = Object.values(day.completed || {}).filter(Boolean).length;
     if (completed >= SCHEDULE.length) perfectDays++;
+    if (completed >= 5) halfDays++;
   }
 
   // Count unique exercise PRs
@@ -1432,6 +1442,7 @@ async function getAchievementData() {
     streak: state.streak,
     totalWorkouts,
     perfectDays,
+    halfDays,
     weightDays,
     totalPRs,
     todaySteps,
