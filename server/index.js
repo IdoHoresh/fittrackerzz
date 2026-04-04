@@ -80,14 +80,33 @@ function saveSteps(data) {
 }
 
 // POST /api/steps — save steps for a date { date: "2026-04-04", steps: 8500 }
+// Also accepts GET for easy iOS Shortcut: /api/steps/save?date=2026-04-04&steps=8500
 app.post("/api/steps", (req, res) => {
-  const { date, steps } = req.body;
-  if (!date || steps === undefined) return res.status(400).json({ error: "Missing date or steps" });
+  let { date, steps } = req.body;
+  if (!date) date = new Date().toISOString().split("T")[0]; // fallback to today
+  if (steps === undefined) return res.status(400).json({ error: "Missing steps" });
+  // Normalize date - try to parse any format
+  const parsed = new Date(date);
+  const ds = !isNaN(parsed) ? parsed.toISOString().split("T")[0] : date;
   const data = loadSteps();
-  data[date] = parseInt(steps) || 0;
+  data[ds] = parseInt(steps) || 0;
   saveSteps(data);
-  console.log(`[steps] ${date}: ${data[date]}`);
-  res.json({ ok: true, date, steps: data[date] });
+  console.log(`[steps] ${ds}: ${data[ds]}`);
+  res.json({ ok: true, date: ds, steps: data[ds] });
+});
+
+// GET shortcut-friendly endpoint
+app.get("/api/steps/save", (req, res) => {
+  let { date, steps } = req.query;
+  if (!date) date = new Date().toISOString().split("T")[0];
+  if (!steps) return res.status(400).json({ error: "Missing steps" });
+  const parsed = new Date(date);
+  const ds = !isNaN(parsed) ? parsed.toISOString().split("T")[0] : date;
+  const data = loadSteps();
+  data[ds] = parseInt(steps) || 0;
+  saveSteps(data);
+  console.log(`[steps] ${ds}: ${data[ds]}`);
+  res.json({ ok: true, date: ds, steps: data[ds] });
 });
 
 // GET /api/steps?date=2026-04-04 or /api/steps?days=7
