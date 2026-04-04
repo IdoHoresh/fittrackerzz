@@ -1,7 +1,7 @@
 // ── Config ──
-const CYCLE = ["upper", "lower", "rest"];
-const CYCLE_LABELS = { upper: "עליון", lower: "תחתון", rest: "מנוחה" };
-const CYCLE_EMOJI = { upper: "💪", lower: "🦵", rest: "😴" };
+const CYCLE = ["upper", "lowerA", "chestBack", "lowerB", "shouldersArms", "rest"];
+const CYCLE_LABELS = { upper: "עליון", lowerA: "רגליים A", chestBack: "חזה/גב", lowerB: "רגליים B", shouldersArms: "כתפיים/ידיים", rest: "מנוחה" };
+const CYCLE_EMOJI = { upper: "💪", lowerA: "🦵", chestBack: "🏋️", lowerB: "🦵", shouldersArms: "💪", rest: "😴" };
 const DEFAULT_START = "2026-04-05";
 let START = localStorage.getItem("fittrack_cycle_start") || DEFAULT_START;
 
@@ -189,12 +189,12 @@ function dateStr(d) { return d.toISOString().split("T")[0]; }
 function dayName(d) { return DAYS[d.getDay()]; }
 function cycleType(ds) {
   const diff = Math.floor((new Date(ds) - new Date(START)) / 864e5);
-  return CYCLE[((diff % 3) + 3) % 3];
+  return CYCLE[((diff % 6) + 6) % 6];
 }
 function hasAerobic(ds) {
-  const diff = Math.floor((new Date(ds) - new Date(START)) / 864e5);
-  const c = ((diff % 6) + 6) % 6;
-  return c < 3 && CYCLE[c % 3] !== "rest";
+  const ct = cycleType(ds);
+  // Aerobic on workout days (not rest)
+  return ct !== "rest";
 }
 
 // ── IndexedDB ──
@@ -820,8 +820,9 @@ function render() {
     }
     html += `</div>`;
   } else if (state.view === "workout") {
-    // Workout view
-    const wType = getWorkoutType(ds);
+    // Workout view — follows the badge workout type
+    // Use badge type if set, otherwise fall back to day-of-week
+    const wType = d.workoutType === "rest" ? null : (d.workoutType && WORKOUTS[d.workoutType]) ? d.workoutType : getWorkoutType(ds);
     html += `<div class="workout-view">`;
 
     if (!wType) {
@@ -1039,8 +1040,7 @@ function cycleWorkoutType() {
   // and all future days follow the new rotation
   const ds = dateStr(state.date);
   const targetIdx = CYCLE.indexOf(next);
-  // We need: (daysDiff % 3) === targetIdx
-  // So new START = this date minus targetIdx days
+  // new START = this date minus targetIdx days
   const thisDate = new Date(ds);
   const newStart = new Date(thisDate);
   newStart.setDate(newStart.getDate() - targetIdx);
