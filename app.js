@@ -845,31 +845,28 @@ function render() {
 
     if (state.showAchievements) {
       html += `<div class="ach-list">`;
-      ACH_CATS.forEach(cat => {
-        const catAchs = ACHIEVEMENTS.filter(a => a.cat === cat.id)
-          .sort((a, b) => {
-            const aUnlocked = unlocked[a.id] ? 1 : 0;
-            const bUnlocked = unlocked[b.id] ? 1 : 0;
-            if (aUnlocked !== bUnlocked) return bUnlocked - aUnlocked; // unlocked first
-            const aP = a.progress ? a.progress((state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 })) / a.target : 0;
-            const bP = b.progress ? b.progress((state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 })) / b.target : 0;
-            return bP - aP; // highest progress first
-          });
-        html += `<div class="ach-cat-label">${cat.icon} ${cat.label}</div>`;
-        catAchs.forEach(ach => {
-          const isUnlocked = !!unlocked[ach.id];
-          const prog = isUnlocked ? ach.target : (ach.progress ? Math.min(ach.progress((state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 })), ach.target) : 0);
-          const pct = Math.round((prog / ach.target) * 100);
-          html += `<div class="ach-card ${isUnlocked ? "ach-unlocked" : "ach-locked"}">
-            <div class="ach-card-icon">${ach.icon}</div>
-            <div class="ach-card-info">
-              <div class="ach-card-title">${ach.title}</div>
-              <div class="ach-card-desc">${ach.desc}</div>
-              ${!isUnlocked ? `<div class="ach-card-bar"><div class="ach-card-fill" style="width:${pct}%"></div></div>
-              <div class="ach-card-prog">${prog}/${ach.target}</div>` : `<div class="ach-card-date">הושג ${unlocked[ach.id]}</div>`}
-            </div>
-          </div>`;
-        });
+      const achData = state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 };
+      const allAchs = [...ACHIEVEMENTS].sort((a, b) => {
+        const aUnlocked = unlocked[a.id] ? 1 : 0;
+        const bUnlocked = unlocked[b.id] ? 1 : 0;
+        if (aUnlocked !== bUnlocked) return bUnlocked - aUnlocked;
+        const aP = a.progress ? a.progress(achData) / a.target : 0;
+        const bP = b.progress ? b.progress(achData) / b.target : 0;
+        return bP - aP;
+      });
+      allAchs.forEach(ach => {
+        const isUnlocked = !!unlocked[ach.id];
+        const prog = isUnlocked ? ach.target : (ach.progress ? Math.min(ach.progress(achData), ach.target) : 0);
+        const pct = Math.round((prog / ach.target) * 100);
+        html += `<div class="ach-card ${isUnlocked ? "ach-unlocked" : "ach-locked"}">
+          <div class="ach-card-icon">${ach.icon}</div>
+          <div class="ach-card-info">
+            <div class="ach-card-title">${ach.title}</div>
+            <div class="ach-card-desc">${ach.desc}</div>
+            ${!isUnlocked ? `<div class="ach-card-bar"><div class="ach-card-fill" style="width:${pct}%"></div></div>
+            <div class="ach-card-prog">${prog}/${ach.target}</div>` : `<div class="ach-card-date">הושג ${unlocked[ach.id]}</div>`}
+          </div>
+        </div>`;
       });
       html += `</div>`;
     }
