@@ -119,6 +119,48 @@ const WORKOUTS = {
   ]}
 };
 
+// ── Achievements ──
+const ACHIEVEMENTS = [
+  // Consistency
+  { id: "streak-7", cat: "consistency", icon: "🔥", title: "Week Warrior", desc: "7 day streak", target: 7, progress: d => d.streak, check: d => d.streak >= 7 },
+  { id: "streak-14", cat: "consistency", icon: "🔥", title: "Two Week Beast", desc: "14 day streak", target: 14, progress: d => d.streak, check: d => d.streak >= 14 },
+  { id: "streak-30", cat: "consistency", icon: "🔥", title: "Monthly Machine", desc: "30 day streak", target: 30, progress: d => d.streak, check: d => d.streak >= 30 },
+  { id: "streak-60", cat: "consistency", icon: "🔥", title: "Iron Will", desc: "60 day streak", target: 60, progress: d => d.streak, check: d => d.streak >= 60 },
+  { id: "streak-100", cat: "consistency", icon: "🔥", title: "Unstoppable", desc: "100 day streak", target: 100, progress: d => d.streak, check: d => d.streak >= 100 },
+  // Strength
+  { id: "first-workout", cat: "strength", icon: "💪", title: "Day One", desc: "Log your first workout", target: 1, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 1 },
+  { id: "first-pr", cat: "strength", icon: "🏆", title: "First Blood", desc: "Hit your first PR", target: 1, progress: d => d.totalPRs, check: d => d.totalPRs >= 1 },
+  { id: "pr-5", cat: "strength", icon: "🏆", title: "PR Hunter", desc: "Hit 5 PRs", target: 5, progress: d => d.totalPRs, check: d => d.totalPRs >= 5 },
+  { id: "pr-10", cat: "strength", icon: "🏆", title: "PR Machine", desc: "Hit 10 PRs", target: 10, progress: d => d.totalPRs, check: d => d.totalPRs >= 10 },
+  { id: "pr-25", cat: "strength", icon: "🏆", title: "PR Legend", desc: "Hit 25 PRs", target: 25, progress: d => d.totalPRs, check: d => d.totalPRs >= 25 },
+  // Steps
+  { id: "steps-5k", cat: "steps", icon: "👟", title: "Getting Moving", desc: "5,000 steps in a day", target: 5000, progress: d => d.todaySteps, check: d => d.todaySteps >= 5000 },
+  { id: "steps-10k", cat: "steps", icon: "👟", title: "Step Master", desc: "10,000 steps in a day", target: 10000, progress: d => d.todaySteps, check: d => d.todaySteps >= 10000 },
+  { id: "steps-15k", cat: "steps", icon: "👟", title: "Road Runner", desc: "15,000 steps in a day", target: 15000, progress: d => d.todaySteps, check: d => d.todaySteps >= 15000 },
+  // Weight
+  { id: "weight-first", cat: "weight", icon: "⚖️", title: "Scale Check", desc: "Log your first weight", target: 1, progress: d => d.weightDays, check: d => d.weightDays >= 1 },
+  { id: "weight-30", cat: "weight", icon: "⚖️", title: "Consistent Tracker", desc: "Log weight 30 days", target: 30, progress: d => d.weightDays, check: d => d.weightDays >= 30 },
+  // Nutrition
+  { id: "meals-perfect", cat: "nutrition", icon: "🥗", title: "Perfect Day", desc: "Complete all 10 tasks", target: 1, progress: d => d.perfectDays, check: d => d.perfectDays >= 1 },
+  { id: "meals-week", cat: "nutrition", icon: "🥗", title: "Full Week", desc: "7 perfect days", target: 7, progress: d => d.perfectDays, check: d => d.perfectDays >= 7 },
+  { id: "meals-50", cat: "nutrition", icon: "🥗", title: "Halfway Hero", desc: "50 perfect days", target: 50, progress: d => d.perfectDays, check: d => d.perfectDays >= 50 },
+  { id: "meals-100", cat: "nutrition", icon: "🥗", title: "Century Club", desc: "100 perfect days", target: 100, progress: d => d.perfectDays, check: d => d.perfectDays >= 100 },
+  // Milestones
+  { id: "workouts-10", cat: "milestones", icon: "🎯", title: "Getting Started", desc: "10 workouts logged", target: 10, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 10 },
+  { id: "workouts-50", cat: "milestones", icon: "🎯", title: "Gym Rat", desc: "50 workouts logged", target: 50, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 50 },
+  { id: "workouts-100", cat: "milestones", icon: "🎯", title: "Iron Veteran", desc: "100 workouts logged", target: 100, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 100 },
+  { id: "app-30", cat: "milestones", icon: "📅", title: "One Month In", desc: "Use the app for 30 days", target: 30, progress: d => d.totalDays, check: d => d.totalDays >= 30 }
+];
+
+const ACH_CATS = [
+  { id: "consistency", label: "Consistency", icon: "🔥" },
+  { id: "strength", label: "Strength", icon: "💪" },
+  { id: "steps", label: "Steps", icon: "👟" },
+  { id: "weight", label: "Weight", icon: "⚖️" },
+  { id: "nutrition", label: "Nutrition", icon: "🥗" },
+  { id: "milestones", label: "Milestones", icon: "🎯" }
+];
+
 function getWorkoutType(ds) {
   const dow = new Date(ds).getDay();
   return WORKOUT_DAYS[dow] || null;
@@ -421,6 +463,7 @@ async function saveDay() {
   await dbPut(state.dayData);
   await calculateStreak();
   render();
+  checkAchievements();
 }
 
 async function loadWeights() {
@@ -785,6 +828,45 @@ function render() {
       <button class="steps-sync-btn" onclick="event.stopPropagation();syncSteps()">🔄 סנכרון</button>
     </div>`;
 
+    // Achievements summary
+    const unlocked = loadUnlocked();
+    const unlockedCount = ACHIEVEMENTS.filter(a => unlocked[a.id]).length;
+    const totalAch = ACHIEVEMENTS.length;
+    const achPct = Math.round((unlockedCount / totalAch) * 100);
+    html += `<div class="ach-section">
+      <div class="ach-summary" onclick="state.showAchievements=!state.showAchievements;render()">
+        <div class="ach-summary-left">
+          <span class="ach-summary-icon">🏆</span>
+          <span class="ach-summary-text">${unlockedCount}/${totalAch} Achievements</span>
+        </div>
+        <span class="ach-summary-arrow">${state.showAchievements ? "▲" : "▼"}</span>
+      </div>
+      <div class="ach-summary-bar"><div class="ach-summary-fill" style="width:${achPct}%"></div></div>`;
+
+    if (state.showAchievements) {
+      html += `<div class="ach-list">`;
+      ACH_CATS.forEach(cat => {
+        const catAchs = ACHIEVEMENTS.filter(a => a.cat === cat.id);
+        html += `<div class="ach-cat-label">${cat.icon} ${cat.label}</div>`;
+        catAchs.forEach(ach => {
+          const isUnlocked = !!unlocked[ach.id];
+          const prog = isUnlocked ? ach.target : (ach.progress ? Math.min(ach.progress({ streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 }), ach.target) : 0);
+          const pct = Math.round((prog / ach.target) * 100);
+          html += `<div class="ach-card ${isUnlocked ? "ach-unlocked" : "ach-locked"}">
+            <div class="ach-card-icon">${ach.icon}</div>
+            <div class="ach-card-info">
+              <div class="ach-card-title">${ach.title}</div>
+              <div class="ach-card-desc">${ach.desc}</div>
+              ${!isUnlocked ? `<div class="ach-card-bar"><div class="ach-card-fill" style="width:${pct}%"></div></div>
+              <div class="ach-card-prog">${prog}/${ach.target}</div>` : `<div class="ach-card-date">Unlocked ${unlocked[ach.id]}</div>`}
+            </div>
+          </div>`;
+        });
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+
     // Water
     html += `<div class="water-box">
       <span class="icon">💧</span>
@@ -1139,8 +1221,10 @@ function saveWorkoutSet(exId, setIdx, field, value) {
 
   if (field === "weight" && !wasPR && checkForNewPR(exId, value)) {
     // New PR! Celebrate
+    incrementPRCount();
     fireConfetti();
     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+    checkAchievements();
     // Re-render to show badge
     render();
   }
@@ -1242,9 +1326,9 @@ async function loadSteps(ds) {
       const prev = el.textContent;
       const newVal = data.steps > 0 ? data.steps.toLocaleString() : "—";
       el.textContent = newVal;
-      // Flash green if updated
       if (prev !== newVal && prev !== "—") el.classList.add("number-bump");
     }
+    if (data.steps > 0) checkAchievements();
   } catch (e) {}
 }
 
@@ -1307,6 +1391,96 @@ function positionNowMarker() {
   if (label) {
     label.textContent = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
   }
+}
+
+// ── Achievements Logic ──
+function loadUnlocked() {
+  try { return JSON.parse(localStorage.getItem("fittrack_achievements") || "{}"); } catch (e) { return {}; }
+}
+function saveUnlocked(u) { localStorage.setItem("fittrack_achievements", JSON.stringify(u)); }
+
+async function getAchievementData() {
+  const all = await dbGetAll();
+  let totalWorkouts = 0, perfectDays = 0, weightDays = 0, totalPRs = 0;
+  const prSet = new Set();
+
+  for (const day of all) {
+    if (day.workoutLog && Object.keys(day.workoutLog).length > 0) totalWorkouts++;
+    if (day.weight) weightDays++;
+    const completed = Object.values(day.completed || {}).filter(Boolean).length;
+    if (completed >= SCHEDULE.length) perfectDays++;
+  }
+
+  // Count unique exercise PRs
+  const unlocked = loadUnlocked();
+  totalPRs = parseInt(unlocked._prCount || "0");
+
+  // Steps from server
+  let todaySteps = 0;
+  try {
+    const resp = await fetch(PUSH_SERVER + "/api/steps?date=" + dateStr(effectiveNow()));
+    const data = await resp.json();
+    todaySteps = data.steps || 0;
+  } catch (e) {}
+
+  return {
+    streak: state.streak,
+    totalWorkouts,
+    perfectDays,
+    weightDays,
+    totalPRs,
+    todaySteps,
+    totalDays: all.length
+  };
+}
+
+async function checkAchievements() {
+  const data = await getAchievementData();
+  const unlocked = loadUnlocked();
+  let newlyUnlocked = [];
+
+  for (const ach of ACHIEVEMENTS) {
+    if (unlocked[ach.id]) continue;
+    if (ach.check(data)) {
+      unlocked[ach.id] = dateStr(effectiveNow());
+      newlyUnlocked.push(ach);
+    }
+  }
+
+  if (newlyUnlocked.length > 0) {
+    saveUnlocked(unlocked);
+    // Celebrate the first one
+    showAchievementToast(newlyUnlocked[0]);
+    fireConfetti();
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+  }
+}
+
+function incrementPRCount() {
+  const unlocked = loadUnlocked();
+  unlocked._prCount = (parseInt(unlocked._prCount || "0") + 1).toString();
+  saveUnlocked(unlocked);
+}
+
+function showAchievementToast(ach) {
+  const existing = document.querySelector(".ach-toast");
+  if (existing) existing.remove();
+
+  const toast = document.createElement("div");
+  toast.className = "ach-toast";
+  toast.innerHTML = `<div class="ach-toast-inner">
+    <span class="ach-toast-icon">${ach.icon}</span>
+    <div>
+      <div class="ach-toast-title">Achievement Unlocked!</div>
+      <div class="ach-toast-name">${ach.title}</div>
+    </div>
+  </div>`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add("ach-toast-show"), 10);
+  setTimeout(() => {
+    toast.classList.remove("ach-toast-show");
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
 }
 
 // ── Personal Records ──
