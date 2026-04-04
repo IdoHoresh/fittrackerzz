@@ -846,7 +846,15 @@ function render() {
     if (state.showAchievements) {
       html += `<div class="ach-list">`;
       ACH_CATS.forEach(cat => {
-        const catAchs = ACHIEVEMENTS.filter(a => a.cat === cat.id);
+        const catAchs = ACHIEVEMENTS.filter(a => a.cat === cat.id)
+          .sort((a, b) => {
+            const aUnlocked = unlocked[a.id] ? 1 : 0;
+            const bUnlocked = unlocked[b.id] ? 1 : 0;
+            if (aUnlocked !== bUnlocked) return bUnlocked - aUnlocked; // unlocked first
+            const aP = a.progress ? a.progress({ streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 }) / a.target : 0;
+            const bP = b.progress ? b.progress({ streak: state.streak, totalWorkouts: 0, perfectDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 }) / b.target : 0;
+            return bP - aP; // highest progress first
+          });
         html += `<div class="ach-cat-label">${cat.icon} ${cat.label}</div>`;
         catAchs.forEach(ach => {
           const isUnlocked = !!unlocked[ach.id];
