@@ -196,10 +196,22 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 async function toggleNotifications() {
+  const isStandalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const hasSW = "serviceWorker" in navigator;
+  const hasNotif = "Notification" in window;
+  const hasPush = hasSW && "PushManager" in window;
+
+  // Debug: show current state (remove after testing)
+  alert("Debug:\nEnabled: " + state.notificationsEnabled +
+    "\nStandalone: " + isStandalone +
+    "\niOS: " + isIOS +
+    "\nSW: " + hasSW +
+    "\nNotification API: " + hasNotif +
+    "\nPush API: " + hasPush +
+    "\nPermission: " + (hasNotif ? Notification.permission : "N/A"));
+
   if (!state.notificationsEnabled) {
-    // Check: is this a PWA on home screen? (iOS requires it)
-    const isStandalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
     if (isIOS && !isStandalone) {
       alert("כדי לקבל התראות באייפון:\n1. לחץ על כפתור השיתוף (⬆️)\n2. בחר ״הוסף למסך הבית״\n3. פתח את האפליקציה מהמסך הראשי\n4. לחץ שוב על 🔔");
