@@ -196,22 +196,9 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 async function toggleNotifications() {
-  const isStandalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const hasSW = "serviceWorker" in navigator;
-  const hasNotif = "Notification" in window;
-  const hasPush = hasSW && "PushManager" in window;
-
-  // Debug: show current state (remove after testing)
-  alert("Debug:\nEnabled: " + state.notificationsEnabled +
-    "\nStandalone: " + isStandalone +
-    "\niOS: " + isIOS +
-    "\nSW: " + hasSW +
-    "\nNotification API: " + hasNotif +
-    "\nPush API: " + hasPush +
-    "\nPermission: " + (hasNotif ? Notification.permission : "N/A"));
-
   if (!state.notificationsEnabled) {
+    const isStandalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
     if (isIOS && !isStandalone) {
       alert("כדי לקבל התראות באייפון:\n1. לחץ על כפתור השיתוף (⬆️)\n2. בחר ״הוסף למסך הבית״\n3. פתח את האפליקציה מהמסך הראשי\n4. לחץ שוב על 🔔");
@@ -234,7 +221,6 @@ async function toggleNotifications() {
     }
 
     try {
-      alert("Step 1: Getting SW registration...");
       const reg = await navigator.serviceWorker.ready;
 
       if (!reg.pushManager) {
@@ -242,42 +228,24 @@ async function toggleNotifications() {
         return;
       }
 
-      alert("Step 2: Subscribing to push...");
-      let sub;
-      try {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-        });
-      } catch (pushErr) {
-        alert("Push subscribe failed:\n" + pushErr.name + ": " + pushErr.message);
-        return;
-      }
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
 
-      alert("Step 3: Sending to server...\nEndpoint: " + sub.endpoint.substring(0, 60) + "...");
-      let resp;
-      try {
-        resp = await fetch(PUSH_SERVER + "/api/subscribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(sub)
-        });
-      } catch (fetchErr) {
-        alert("Fetch failed:\n" + fetchErr.name + ": " + fetchErr.message);
-        return;
-      }
+      const resp = await fetch(PUSH_SERVER + "/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sub)
+      });
 
-      if (!resp.ok) {
-        alert("Server error: " + resp.status);
-        return;
-      }
+      if (!resp.ok) throw new Error("Server returned " + resp.status);
 
-      alert("Step 4: Success! Notifications enabled.");
       state.notificationsEnabled = true;
       localStorage.setItem("fittrack_notif", "true");
     } catch (err) {
       console.error("Push subscription failed:", err);
-      alert("שגיאה בהרשמה להתראות:\n" + err.name + ": " + err.message);
+      alert("שגיאה בהרשמה להתראות:\n" + err.message);
     }
   } else {
     // Turning off — unsubscribe
