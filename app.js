@@ -854,6 +854,7 @@ function render() {
       html += `<h2 class="wo-title">${wo.icon} ${wo.label}</h2>`;
 
       const log = d.workoutLog || {};
+      const todayPRs = getTodayPRs();
 
       wo.groups.forEach((group, gIdx) => {
         html += `<div class="wo-group stagger-in" style="animation-delay:${gIdx * 0.06}s">`;
@@ -870,13 +871,16 @@ function render() {
             displaySets.push(sets[i] || { weight: "", reps: "" });
           }
 
-          html += `<div class="wo-exercise">
+          const isPR = todayPRs.has(ex.id);
+          const allTimePR = getExercisePR(ex.id);
+
+          html += `<div class="wo-exercise ${isPR ? "wo-exercise-pr" : ""}">
             <div class="wo-ex-header">
-              <div class="wo-ex-name">${ex.label} ${ex.info ? `<button class="wo-info-btn" onclick="event.stopPropagation();showExInfo('${ex.id}')">ⓘ</button>` : ""}</div>
+              <div class="wo-ex-name">${ex.label} ${ex.info ? `<button class="wo-info-btn" onclick="event.stopPropagation();showExInfo('${ex.id}')">ⓘ</button>` : ""} ${isPR ? `<span class="wo-pr-badge">🏆 PR!</span>` : ""}</div>
               <div class="wo-ex-target">${ex.sets} × ${ex.reps}</div>
             </div>
             <div class="wo-ex-sub">${ex.sub}</div>
-            <div class="wo-ex-last">Last: <span class="wo-ex-last-val">${lastStr}</span></div>`;
+            <div class="wo-ex-last">Last: <span class="wo-ex-last-val">${lastStr}</span>${allTimePR > 0 ? ` · Best: <span class="wo-ex-pr-val">${allTimePR} kg</span>` : ""}</div>`;
 
           displaySets.forEach((s, sIdx) => {
             html += `<div class="wo-set-row">
@@ -1114,8 +1118,19 @@ function saveWorkoutSet(exId, setIdx, field, value) {
   if (!state.dayData.workoutLog[exId]) state.dayData.workoutLog[exId] = [];
   const sets = state.dayData.workoutLog[exId];
   while (sets.length <= setIdx) sets.push({ weight: "", reps: "" });
+
+  // Check for new PR before saving (only on weight changes)
+  const wasPR = getTodayPRs().has(exId);
   sets[setIdx][field] = value;
   dbPut(state.dayData);
+
+  if (field === "weight" && !wasPR && checkForNewPR(exId, value)) {
+    // New PR! Celebrate
+    fireConfetti();
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+    // Re-render to show badge
+    render();
+  }
 }
 
 function addWorkoutSet(exId) {
@@ -1279,6 +1294,54 @@ function positionNowMarker() {
   if (label) {
     label.textContent = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
   }
+}
+
+// ── Personal Records ──
+function getExercisePR(exId) {
+  // Find all-time max weight for this exercise across all days
+  if (!state._workoutHistory) return 0;
+  let max = 0;
+  for (const day of state._workoutHistory) {
+    if (!day.workoutLog || !day.workoutLog[exId]) continue;
+    for (const set of day.workoutLog[exId]) {
+      const w = parseFloat(set.weight) || 0;
+      if (w > max) max = w;
+    }
+  }
+  return max;
+}
+
+function checkForNewPR(exId, weight) {
+  const w = parseFloat(weight) || 0;
+  if (w <= 0) return false;
+  const prevPR = getExercisePR(exId);
+  // Check current day's sets too (in case they already beat it earlier today)
+  const todaySets = (state.dayData.workoutLog && state.dayData.workoutLog[exId]) || [];
+  const todayMax = Math.max(0, ...todaySets.map(s => parseFloat(s.weight) || 0));
+  const allTimeBest = Math.max(prevPR, todayMax);
+  return w > prevPR && w >= todayMax;
+}
+
+function getTodayPRs() {
+  // Returns set of exercise IDs where today has a new PR
+  const prs = new Set();
+  if (!state.dayData.workoutLog || !state._workoutHistory) return prs;
+  for (const [exId, sets] of Object.entries(state.dayData.workoutLog)) {
+    const todayMax = Math.max(0, ...sets.map(s => parseFloat(s.weight) || 0));
+    if (todayMax <= 0) continue;
+    // Get max from all OTHER days
+    let histMax = 0;
+    for (const day of state._workoutHistory) {
+      if (day.date === state.dayData.date) continue;
+      if (!day.workoutLog || !day.workoutLog[exId]) continue;
+      for (const set of day.workoutLog[exId]) {
+        const w = parseFloat(set.weight) || 0;
+        if (w > histMax) histMax = w;
+      }
+    }
+    if (todayMax > histMax && histMax > 0) prs.add(exId);
+  }
+  return prs;
 }
 
 // ── Rest Timer (Stopwatch) ──
