@@ -304,6 +304,7 @@ async function saveWeight() {
   saveScrollPosition();
   state.dayData.weight = state.weightInput;
   state.weightInput = "";
+  state.weightJustSaved = true;
   await dbPut(state.dayData);
   await loadWeights();
   render();
@@ -446,6 +447,9 @@ function render() {
   const slideClass = state.slideDirection === "left" ? "slide-in-left" : state.slideDirection === "right" ? "slide-in-right" : "";
   state.slideDirection = null;
 
+  // Tab enter animation
+  const tabEnter = state.animateItems ? " tab-enter" : "";
+
   let html = "";
 
   if (state.view === "today") {
@@ -463,17 +467,21 @@ function render() {
 
     // Streak
     if (state.streak > 0) {
+      const milestones = [5, 10, 25, 50, 100];
+      const isMilestone = milestones.includes(state.streak);
+      const milestoneClass = isMilestone ? " streak-milestone" : "";
       html += `<div class="streak-row">
-        <div class="streak-badge">
+        <div class="streak-badge${milestoneClass}" id="streak-badge">
           <span class="fire">🔥</span>
-          <span>${state.streak} ימים ברצף</span>
+          <span>${state.streak} ימים ברצף${isMilestone ? " 🏆" : ""}</span>
         </div>
       </div>`;
     }
 
     // Badges (tap to change workout type)
+    const bounceClass = state.badgeBounce ? " badge-bounce" : "";
     html += `<div class="badges">
-      <div class="badge ${isRest ? "badge-rest" : "badge-workout"} badge-tap" onclick="cycleWorkoutType()">
+      <div class="badge ${isRest ? "badge-rest" : "badge-workout"} badge-tap${bounceClass}" onclick="cycleWorkoutType()">
         <span style="font-size:18px">${CYCLE_EMOJI[ct]}</span>
         ${isRest ? "יום מנוחה" : "אימון " + CYCLE_LABELS[ct]}
         <span class="badge-edit">✏️</span>
@@ -488,10 +496,13 @@ function render() {
     </div>`;
 
     // Weight input
-    html += `<div class="weight-box">
+    const weightSavedClass = state.weightJustSaved ? " weight-saved" : "";
+    const savedIndicator = state.weightJustSaved ? `<span class="saved-check">✓</span>` : "";
+    html += `<div class="weight-box${weightSavedClass}">
       <span style="font-size:18px">⚖️</span>
       <input type="number" step="0.1" id="weightIn" placeholder="${d.weight ? d.weight + ' ק"ג ✓' : 'משקל בוקר'}" value="${state.weightInput}" oninput="state.weightInput=this.value;updateWeightBtn()">
       <button class="weight-btn ${state.weightInput ? "ready" : "idle"}" id="weightBtn" onclick="saveWeight()">שמור</button>
+      ${savedIndicator}
     </div>`;
 
     // Timeline
@@ -555,7 +566,7 @@ function render() {
       html += `<div class="empty-state"><div class="icon">⚖️</div><div style="font-size:15px">עדיין אין נתוני משקל</div><div style="font-size:13px;margin-top:6px">הזן את המשקל שלך בתצוגה היומית</div></div>`;
     } else {
       // Chart
-      html += `<div class="chart-box">`;
+      html += `<div class="chart-box stagger-in" style="animation-delay:0.05s">`;
       const data = wh.slice(-30);
       if (data.length < 2) {
         html += `<div style="color:var(--text3);text-align:center;padding:20px">צריך לפחות 2 מדידות לגרף</div>`;
@@ -575,11 +586,16 @@ function render() {
           svg += `<text x="35" y="${y + 4}" fill="#64748b" font-size="10" text-anchor="end" font-family="Heebo">${v}</text>`;
         });
         svg += `<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4caf50" stop-opacity="0.3"/><stop offset="100%" stop-color="#4caf50" stop-opacity="0"/></linearGradient></defs>`;
-        svg += `<path d="${area}" fill="url(#ag)"/>`;
-        svg += `<path d="${path}" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linejoin="round"/>`;
+        // Calculate path length for draw animation
+        let pathLen = 0;
+        for (let i = 1; i < pts.length; i++) {
+          pathLen += Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y);
+        }
+        svg += `<path d="${area}" fill="url(#ag)" class="chart-area-animated"/>`;
+        svg += `<path d="${path}" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linejoin="round" class="chart-line-animated" style="stroke-dasharray:${pathLen};--path-length:${pathLen}"/>`;
         pts.forEach((p, i) => {
-          svg += `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#0a0e17" stroke="#4caf50" stroke-width="2"/>`;
-          if (i === 0 || i === pts.length - 1) svg += `<text x="${p.x}" y="${p.y - 10}" fill="#e2e8f0" font-size="11" text-anchor="middle" font-weight="600" font-family="Heebo">${p.weight}</text>`;
+          svg += `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#0a0e17" stroke="#4caf50" stroke-width="2" class="chart-dot-animated" style="animation-delay:${0.3 + i * 0.08}s"/>`;
+          if (i === 0 || i === pts.length - 1) svg += `<text x="${p.x}" y="${p.y - 10}" fill="#e2e8f0" font-size="11" text-anchor="middle" font-weight="600" font-family="Heebo" class="chart-dot-animated" style="animation-delay:${0.3 + i * 0.08}s">${p.weight}</text>`;
         });
         svg += `</svg>`;
         html += svg;
@@ -591,14 +607,14 @@ function render() {
         const first = wh[0].weight, last = wh[wh.length - 1].weight, diff = (last - first).toFixed(1);
         const diffColor = parseFloat(diff) <= 0 ? "var(--green)" : "var(--red)";
         html += `<div class="stats-grid">
-          <div class="stat-card"><div class="stat-label">התחלה</div><div class="stat-val" style="color:var(--text2)">${first}</div><div class="stat-unit">ק"ג</div></div>
-          <div class="stat-card"><div class="stat-label">נוכחי</div><div class="stat-val">${last}</div><div class="stat-unit">ק"ג</div></div>
-          <div class="stat-card"><div class="stat-label">שינוי</div><div class="stat-val" style="color:${diffColor}">${diff}</div><div class="stat-unit">ק"ג</div></div>
+          <div class="stat-card stagger-in" style="animation-delay:0.1s"><div class="stat-label">התחלה</div><div class="stat-val" style="color:var(--text2)">${first}</div><div class="stat-unit">ק"ג</div></div>
+          <div class="stat-card stagger-in" style="animation-delay:0.2s"><div class="stat-label">נוכחי</div><div class="stat-val">${last}</div><div class="stat-unit">ק"ג</div></div>
+          <div class="stat-card stagger-in" style="animation-delay:0.3s"><div class="stat-label">שינוי</div><div class="stat-val" style="color:${diffColor}">${diff}</div><div class="stat-unit">ק"ג</div></div>
         </div>`;
       }
 
       // History
-      html += `<div class="history-list">`;
+      html += `<div class="history-list stagger-in" style="animation-delay:0.4s">`;
       wh.slice().reverse().forEach(e => {
         html += `<div class="history-item"><span class="history-date">${e.date}</span><span class="history-weight">${e.weight} ק"ג</span></div>`;
       });
@@ -618,7 +634,7 @@ function render() {
 
   const contentInner = document.getElementById("content-inner");
   contentInner.innerHTML = html;
-  contentInner.className = "content-inner " + slideClass;
+  contentInner.className = "content-inner " + slideClass + tabEnter;
 
   // Restore scroll aggressively — covers sync render, async render, and browser paint
   scrollContainer.scrollTop = restoreScroll;
@@ -628,11 +644,46 @@ function render() {
     requestAnimationFrame(() => { scrollContainer.scrollTop = restoreScroll; });
   });
 
-  // Post-render: checkbox pop animation
+  // Post-render: checkbox pop animation with burst ring
   if (state.lastToggled) {
     const el = document.querySelector(`[data-check-id="${state.lastToggled}"]`);
-    if (el) el.classList.add("pop");
+    if (el && state.dayData.completed[state.lastToggled]) {
+      el.classList.add("check-burst");
+    } else if (el) {
+      el.classList.add("pop");
+    }
     state.lastToggled = null;
+  }
+
+  // Post-render: progress counter animation
+  const progVal = document.querySelector(".progress-val");
+  if (progVal && state._prevCompleted !== undefined && state._prevCompleted !== completed) {
+    progVal.classList.add("number-bump");
+  }
+  state._prevCompleted = completed;
+
+  // Post-render: streak milestone stars
+  if (state.streak > 0) {
+    const milestones = [5, 10, 25, 50, 100];
+    if (milestones.includes(state.streak)) {
+      const badge = document.getElementById("streak-badge");
+      if (badge) fireStreakStars(badge);
+    }
+  }
+
+  // Post-render: reset badge bounce
+  if (state.badgeBounce) state.badgeBounce = false;
+
+  // Post-render: reset weight saved indicator
+  if (state.weightJustSaved) {
+    setTimeout(() => {
+      state.weightJustSaved = false;
+      // Don't re-render, just remove the class/element
+      const wb = document.querySelector(".weight-box");
+      if (wb) wb.classList.remove("weight-saved");
+      const sc = document.querySelector(".saved-check");
+      if (sc) sc.remove();
+    }, 1500);
   }
 
   // Focus note input if editing
@@ -647,6 +698,7 @@ function render() {
 
 function cycleWorkoutType() {
   saveScrollPosition();
+  state.badgeBounce = true;
   const current = state.dayData.workoutType || cycleType(dateStr(state.date));
   const idx = CYCLE.indexOf(current);
   const next = CYCLE[(idx + 1) % CYCLE.length];
@@ -678,6 +730,59 @@ function updateWeightBtn() {
   if (b) b.className = "weight-btn " + (state.weightInput ? "ready" : "idle");
 }
 
+// ── Ripple Effect ──
+function initRipple() {
+  document.addEventListener("pointerdown", e => {
+    const target = e.target.closest(".tab, .check, .tl-card, .badge-tap, .today-btn, .date-nav button, .notif-toggle, .weight-btn, .note-actions button");
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const circle = document.createElement("span");
+    const size = Math.max(rect.width, rect.height);
+    circle.className = "ripple-circle";
+    circle.style.width = circle.style.height = size + "px";
+    circle.style.left = (e.clientX - rect.left - size / 2) + "px";
+    circle.style.top = (e.clientY - rect.top - size / 2) + "px";
+    target.style.position = target.style.position || "relative";
+    target.style.overflow = "hidden";
+    target.appendChild(circle);
+    circle.addEventListener("animationend", () => circle.remove());
+  });
+}
+
+// ── Animated Counter ──
+function animateCounter(el, from, to) {
+  const duration = 400;
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    const val = Math.round(from + (to - from) * ease);
+    el.textContent = val;
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── Streak Milestone Stars ──
+function fireStreakStars(badgeEl) {
+  const container = document.createElement("div");
+  container.className = "streak-stars";
+  const stars = ["⭐", "✨", "🌟", "💫"];
+  for (let i = 0; i < 8; i++) {
+    const star = document.createElement("span");
+    star.className = "streak-star";
+    star.textContent = stars[i % stars.length];
+    const angle = (i / 8) * Math.PI * 2;
+    star.style.setProperty("--sx", Math.cos(angle) * 40 + "px");
+    star.style.setProperty("--sy", Math.sin(angle) * 40 + "px");
+    star.style.animationDelay = (i * 0.05) + "s";
+    container.appendChild(star);
+  }
+  badgeEl.style.position = "relative";
+  badgeEl.appendChild(container);
+  setTimeout(() => container.remove(), 1000);
+}
+
 // ── Init ──
 openDB().then(async () => {
   await loadDay();
@@ -685,5 +790,6 @@ openDB().then(async () => {
   await calculateStreak();
   render();
   initSwipe();
+  initRipple();
   scheduleNotifications();
 });
