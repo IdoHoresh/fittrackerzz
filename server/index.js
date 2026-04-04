@@ -6,12 +6,52 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-app.use(cors());
+
+// CORS — restrict to app domains only
+const ALLOWED_ORIGINS = [
+  "https://idohoresh.github.io",
+  "https://fittrackerzz.netlify.app",
+  "https://fittracker-gilt.vercel.app",
+  "http://localhost:3000"
+];
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || ALLOWED_ORIGINS.some(o => origin.startsWith(o))) cb(null, true);
+    else cb(null, false);
+  }
+}));
 app.use(express.json());
 
-// VAPID keys — set via env vars in production
-const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || "BBzsqZhI0Mb7UgBf2U9QahzTLl3MY_FnuWOUaMwIDvkfRQ3KWRbXuPuqNEIQgLJnjTAL0yTwqw1DkLpGaxeheGQ";
-const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY || "tKnqnHaVgjmd-2gV29p1wpgF02HH2QhCAtH1qWZ_gUg";
+// Rate limiting
+const rateMap = new Map();
+function rateLimit(maxReqs, windowMs) {
+  return (req, res, next) => {
+    const ip = req.ip || req.headers["x-forwarded-for"] || "unknown";
+    const key = ip + req.path;
+    const now = Date.now();
+    const entry = rateMap.get(key) || { count: 0, reset: now + windowMs };
+    if (now > entry.reset) { entry.count = 0; entry.reset = now + windowMs; }
+    entry.count++;
+    rateMap.set(key, entry);
+    if (entry.count > maxReqs) return res.status(429).json({ error: "Too many requests" });
+    next();
+  };
+}
+
+// API key for sensitive endpoints
+const API_KEY = process.env.API_KEY || "fittrack_sk_2026";
+function requireAuth(req, res, next) {
+  const key = req.headers["x-api-key"] || req.query.key;
+  if (key === API_KEY) return next();
+  res.status(401).json({ error: "Unauthorized" });
+}
+
+// VAPID keys — must be set via env vars in production
+const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || "";
+const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY || "";
+if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
+  console.error("ERROR: VAPID keys not set! Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY env vars.");
+}
 
 webpush.setVapidDetails("mailto:fittrack@example.com", VAPID_PUBLIC, VAPID_PRIVATE);
 
@@ -35,7 +75,7 @@ app.get("/api/vapid-public-key", (req, res) => {
   res.json({ publicKey: VAPID_PUBLIC });
 });
 
-app.post("/api/subscribe", (req, res) => {
+app.post("/api/subscribe", rateLimit(10, 60000), (req, res) => {
   const sub = req.body;
   if (!sub || !sub.endpoint) return res.status(400).json({ error: "Invalid subscription" });
 
@@ -49,7 +89,7 @@ app.post("/api/subscribe", (req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/unsubscribe", (req, res) => {
+app.post("/api/unsubscribe", rateLimit(10, 60000), (req, res) => {
   const { endpoint } = req.body;
   if (!endpoint) return res.status(400).json({ error: "Missing endpoint" });
 
@@ -81,36 +121,32 @@ function saveSteps(data) {
 
 // POST /api/steps — save steps for a date { date: "2026-04-04", steps: 8500 }
 // Also accepts GET for easy iOS Shortcut: /api/steps/save?date=2026-04-04&steps=8500
-app.post("/api/steps", (req, res) => {
-  let { date, steps } = req.body;
-  if (!date) date = new Date().toISOString().split("T")[0]; // fallback to today
-  if (steps === undefined) return res.status(400).json({ error: "Missing steps" });
-  // Normalize date - try to parse any format
+function validateAndSaveSteps(date, steps, res) {
+  if (!date) date = new Date().toISOString().split("T")[0];
+  const stepCount = parseInt(steps);
+  if (isNaN(stepCount) || stepCount < 0 || stepCount > 500000) {
+    return res.status(400).json({ error: "Invalid steps (0-500000)" });
+  }
   const parsed = new Date(date);
-  const ds = !isNaN(parsed) ? parsed.toISOString().split("T")[0] : date;
+  if (isNaN(parsed)) return res.status(400).json({ error: "Invalid date" });
+  const ds = parsed.toISOString().split("T")[0];
   const data = loadSteps();
-  data[ds] = parseInt(steps) || 0;
+  data[ds] = stepCount;
   saveSteps(data);
-  console.log(`[steps] ${ds}: ${data[ds]}`);
-  res.json({ ok: true, date: ds, steps: data[ds] });
+  console.log(`[steps] ${ds}: ${stepCount}`);
+  res.json({ ok: true, date: ds, steps: stepCount });
+}
+
+app.post("/api/steps", rateLimit(30, 60000), (req, res) => {
+  validateAndSaveSteps(req.body.date, req.body.steps, res);
 });
 
-// GET shortcut-friendly endpoint
-app.get("/api/steps/save", (req, res) => {
-  let { date, steps } = req.query;
-  if (!date) date = new Date().toISOString().split("T")[0];
-  if (!steps) return res.status(400).json({ error: "Missing steps" });
-  const parsed = new Date(date);
-  const ds = !isNaN(parsed) ? parsed.toISOString().split("T")[0] : date;
-  const data = loadSteps();
-  data[ds] = parseInt(steps) || 0;
-  saveSteps(data);
-  console.log(`[steps] ${ds}: ${data[ds]}`);
-  res.json({ ok: true, date: ds, steps: data[ds] });
+app.get("/api/steps/save", rateLimit(30, 60000), (req, res) => {
+  validateAndSaveSteps(req.query.date, req.query.steps, res);
 });
 
 // GET /api/steps?date=2026-04-04 or /api/steps?days=7
-app.get("/api/steps", (req, res) => {
+app.get("/api/steps", rateLimit(60, 60000), (req, res) => {
   const data = loadSteps();
   if (req.query.date) {
     return res.json({ date: req.query.date, steps: data[req.query.date] || 0 });
@@ -129,7 +165,7 @@ app.get("/api/steps", (req, res) => {
 });
 
 // Test push — send a test notification to all subscribers
-app.post("/api/test", async (req, res) => {
+app.post("/api/test", requireAuth, rateLimit(5, 60000), async (req, res) => {
   const subs = loadSubs();
   if (subs.length === 0) return res.json({ ok: false, error: "No subscribers" });
   await sendToAll("🔔 בדיקת התראות", "", "fittrack-test");
