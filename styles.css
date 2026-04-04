@@ -220,7 +220,7 @@ input:focus{outline:none}
 .wo-info-popup-body{font-size:13.5px;line-height:1.7;color:var(--text2)}
 
 /* Rest timer */
-.timer-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,23,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:10px 20px;padding-bottom:calc(10px + var(--safe-bottom));display:flex;justify-content:space-between;align-items:center;z-index:200}
+.timer-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,23,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:6px 20px;padding-bottom:calc(6px + var(--safe-bottom));display:flex;justify-content:space-between;align-items:center;z-index:200}
 .timer-running{border-top-color:rgba(76,175,80,0.3)}
 .timer-left{display:flex;align-items:center;gap:10px;cursor:pointer;flex:1}
 .timer-icon{font-size:14px;color:var(--text3)}
