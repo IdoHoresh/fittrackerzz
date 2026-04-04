@@ -101,8 +101,112 @@ let state = {
   streak: 0,
   slideDirection: null,
   animateItems: true,
-  lastToggled: null
+  lastToggled: null,
+  notificationsEnabled: localStorage.getItem("fittrack_notif") === "true"
 };
+
+// ── Notifications ──
+let _notifTimers = {}; // { taskId: timeoutId }
+
+async function toggleNotifications() {
+  if (!state.notificationsEnabled) {
+    // Turning on — request permission first
+    if (!("Notification" in window)) return;
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") return;
+    state.notificationsEnabled = true;
+    localStorage.setItem("fittrack_notif", "true");
+    scheduleNotifications();
+  } else {
+    // Turning off
+    state.notificationsEnabled = false;
+    localStorage.setItem("fittrack_notif", "false");
+    cancelAllNotifications();
+  }
+  render();
+}
+
+function scheduleNotifications() {
+  cancelAllNotifications();
+  if (!state.notificationsEnabled) return;
+  if (Notification.permission !== "granted") return;
+
+  const now = new Date();
+  const todayStr = dateStr(now);
+  const d = state.dayData;
+  if (!d || d.date !== todayStr) return;
+
+  SCHEDULE.forEach(item => {
+    // Skip completed tasks
+    if (d.completed[item.id]) return;
+
+    // Parse scheduled time
+    const [h, m] = item.time.split(":").map(Number);
+    const taskTime = new Date(now);
+    taskTime.setHours(h, m, 0, 0);
+
+    // Handle times past midnight (e.g., 01:00 sleep)
+    if (h < 6) taskTime.setDate(taskTime.getDate() + 1);
+
+    const delay = taskTime - now;
+    if (delay <= 0) return; // Time already passed
+
+    _notifTimers[item.id] = setTimeout(() => {
+      showTaskNotification(item);
+    }, delay);
+  });
+
+  // Schedule midnight reschedule
+  const midnight = new Date(now);
+  midnight.setDate(midnight.getDate() + 1);
+  midnight.setHours(0, 0, 5, 0); // 00:00:05
+  const msToMidnight = midnight - now;
+  _notifTimers["_midnight"] = setTimeout(() => {
+    scheduleNotifications();
+  }, msToMidnight);
+}
+
+function showTaskNotification(item) {
+  const isW = item.id === "workout";
+  const ct = cycleType(dateStr(new Date()));
+  let body = item.time;
+  if (isW) {
+    body += " — אימון " + CYCLE_LABELS[ct];
+  } else if (item.detail) {
+    body += " — " + item.detail.split("\n")[0];
+  }
+
+  // Try service worker first, fall back to Notification API
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: "showNotification",
+      title: item.icon + " " + item.label,
+      body: body,
+      tag: "fittrack-" + item.id
+    });
+  } else {
+    new Notification(item.icon + " " + item.label, {
+      body: body,
+      tag: "fittrack-" + item.id,
+      dir: "rtl",
+      lang: "he"
+    });
+  }
+}
+
+function cancelNotification(id) {
+  if (_notifTimers[id]) {
+    clearTimeout(_notifTimers[id]);
+    delete _notifTimers[id];
+  }
+}
+
+function cancelAllNotifications() {
+  Object.keys(_notifTimers).forEach(id => {
+    clearTimeout(_notifTimers[id]);
+  });
+  _notifTimers = {};
+}
 
 function defaultDay(ds) {
   return { date: ds, completed: {}, notes: {}, weight: "", workoutType: cycleType(ds), hasAerobic: hasAerobic(ds) };
@@ -174,6 +278,9 @@ function toggleComplete(id) {
   saveScrollPosition();
   state.dayData.completed[id] = !state.dayData.completed[id];
   state.lastToggled = id;
+
+  // Cancel notification for completed task
+  if (state.dayData.completed[id]) cancelNotification(id);
 
   const completedCount = SCHEDULE.filter(s => state.dayData.completed[s.id]).length;
   const justCompleted = state.dayData.completed[id] && completedCount === SCHEDULE.length;
@@ -322,12 +429,16 @@ function render() {
   const isToday = dateStr(state.date) === dateStr(new Date());
 
   // Header — rendered into permanent #header-root
+  const bellIcon = state.notificationsEnabled ? "🔔" : "🔕";
   const headerHtml = `<div class="header-inner">
     <div class="tabs">
       <button class="tab ${state.view === "today" ? "active" : ""}" onclick="setState('view','today')">📋 יומי</button>
       <button class="tab ${state.view === "weight" ? "active" : ""}" onclick="setState('view','weight');loadWeights().then(render)">⚖️ משקל</button>
     </div>
-    <div class="logo"><span>FIT</span><span>TRACK</span></div>
+    <div class="header-right">
+      <button class="notif-toggle ${state.notificationsEnabled ? "on" : ""}" onclick="toggleNotifications()" title="התראות">${bellIcon}</button>
+      <div class="logo"><span>FIT</span><span>TRACK</span></div>
+    </div>
   </div>`;
 
   // Determine slide class
@@ -548,4 +659,5 @@ openDB().then(async () => {
   await calculateStreak();
   render();
   initSwipe();
+  scheduleNotifications();
 });

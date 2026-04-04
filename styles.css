@@ -15,6 +15,10 @@ input:focus{outline:none}
 .tabs{display:flex;gap:6px}
 .tab{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:var(--text2);border-radius:10px;padding:7px 16px;font-size:13px;font-family:'Heebo';font-weight:500;cursor:pointer;transition:all 0.2s}
 .tab.active{background:rgba(76,175,80,0.15);border-color:rgba(76,175,80,0.35);color:var(--green);box-shadow:0 0 12px rgba(76,175,80,0.1)}
+.header-right{display:flex;align-items:center;gap:10px}
+.notif-toggle{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;width:36px;height:36px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;padding:0}
+.notif-toggle.on{background:rgba(76,175,80,0.12);border-color:rgba(76,175,80,0.3)}
+.notif-toggle:active{transform:scale(0.9)}
 
 /* Content */
 .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px;padding-bottom:calc(var(--safe-bottom) + 20px)}
