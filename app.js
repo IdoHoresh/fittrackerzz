@@ -142,12 +142,18 @@ const ACHIEVEMENTS = [
   { id: "steps-7k", cat: "steps", icon: "👟", title: "הולך יפה", desc: "7,000 צעדים ביום", target: 7000, progress: d => d.todaySteps, check: d => d.todaySteps >= 7000 },
   { id: "steps-10k", cat: "steps", icon: "👟", title: "אלוף הצעדים", desc: "10,000 צעדים ביום", target: 10000, progress: d => d.todaySteps, check: d => d.todaySteps >= 10000 },
   { id: "steps-15k", cat: "steps", icon: "👟", title: "רץ הכביש", desc: "15,000 צעדים ביום", target: 15000, progress: d => d.todaySteps, check: d => d.todaySteps >= 15000 },
-  // משקל
+  // משקל — תיעוד
   { id: "weight-first", cat: "weight", icon: "⚖️", title: "בדיקת משקל", desc: "תעד משקל ראשון", target: 1, progress: d => d.weightDays, check: d => d.weightDays >= 1 },
   { id: "weight-3", cat: "weight", icon: "⚖️", title: "שלושה ימים", desc: "תעד משקל 3 ימים", target: 3, progress: d => d.weightDays, check: d => d.weightDays >= 3 },
   { id: "weight-7", cat: "weight", icon: "⚖️", title: "שבוע על המשקל", desc: "תעד משקל 7 ימים", target: 7, progress: d => d.weightDays, check: d => d.weightDays >= 7 },
   { id: "weight-14", cat: "weight", icon: "⚖️", title: "שבועיים על המשקל", desc: "תעד משקל 14 ימים", target: 14, progress: d => d.weightDays, check: d => d.weightDays >= 14 },
   { id: "weight-30", cat: "weight", icon: "⚖️", title: "עוקב עקבי", desc: "תעד משקל 30 ימים", target: 30, progress: d => d.weightDays, check: d => d.weightDays >= 30 },
+  // משקל — ירידה
+  { id: "lose-0.5", cat: "weight", icon: "🔻", title: "ההתחלה", desc: "ירדת חצי קילו", target: 5, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 0.5 },
+  { id: "lose-1", cat: "weight", icon: "🔻", title: "קילו ראשון", desc: "ירדת קילו", target: 10, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 1 },
+  { id: "lose-2", cat: "weight", icon: "🔻", title: "בדרך הנכונה", desc: "ירדת 2 קילו", target: 20, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 2 },
+  { id: "lose-3", cat: "weight", icon: "🔻", title: "שלושה למטה", desc: "ירדת 3 קילו", target: 30, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 3 },
+  { id: "lose-5", cat: "weight", icon: "🏅", title: "יעד הושג!", desc: "ירדת 5 קילו", target: 50, progress: d => Math.round(d.weightLost * 10), check: d => d.weightLost >= 5 },
   // תזונה
   { id: "meals-half", cat: "nutrition", icon: "🥗", title: "חצי יום", desc: "השלם 5 משימות ביום", target: 1, progress: d => d.halfDays, check: d => d.halfDays >= 1 },
   { id: "meals-perfect", cat: "nutrition", icon: "🥗", title: "יום מושלם", desc: "השלם את כל 10 המשימות", target: 1, progress: d => d.perfectDays, check: d => d.perfectDays >= 1 },
@@ -855,7 +861,7 @@ function render() {
 
     if (state.showAchievements) {
       html += `<div class="ach-list">`;
-      const achData = state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, halfDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), todaySteps: 0, totalDays: 0 };
+      const achData = state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, halfDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), weightLost: 0, todaySteps: 0, totalDays: 0 };
       const allAchs = [...ACHIEVEMENTS].sort((a, b) => {
         const aUnlocked = unlocked[a.id] ? 1 : 0;
         const bUnlocked = unlocked[b.id] ? 1 : 0;
@@ -1485,6 +1491,15 @@ async function getAchievementData() {
   const unlocked = loadUnlocked();
   totalPRs = parseInt(unlocked._prCount || "0");
 
+  // Weight loss from first to latest
+  let weightLost = 0;
+  const weightEntries = all.filter(d => d.weight).sort((a, b) => a.date.localeCompare(b.date));
+  if (weightEntries.length >= 2) {
+    const first = parseFloat(weightEntries[0].weight);
+    const latest = parseFloat(weightEntries[weightEntries.length - 1].weight);
+    weightLost = Math.max(0, first - latest);
+  }
+
   // Steps from server
   let todaySteps = 0;
   try {
@@ -1500,6 +1515,7 @@ async function getAchievementData() {
     halfDays,
     weightDays,
     totalPRs,
+    weightLost,
     todaySteps,
     totalDays: all.length
   };
