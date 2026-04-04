@@ -281,7 +281,7 @@ let state = {
 
 // ── Push Notifications (server-based) ──
 const PUSH_SERVER = localStorage.getItem("fittrack_push_server") || "https://fittrack-push.onrender.com";
-const VAPID_PUBLIC_KEY = "BBzsqZhI0Mb7UgBf2U9QahzTLl3MY_FnuWOUaMwIDvkfRQ3KWRbXuPuqNEIQgLJnjTAL0yTwqw1DkLpGaxeheGQ";
+const VAPID_PUBLIC_KEY = "BEpcnuPgSWSR9s-QkFhWHmdr2V0xMQexnN2fyx1MHgLAL2DfRWg58H6jEVX6ZjklSgjTi7JYjye1UEc3lWsxv1I";
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - base64String.length % 4) % 4);
