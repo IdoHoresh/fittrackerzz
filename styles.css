@@ -219,15 +219,15 @@ input:focus{outline:none}
 .wo-info-popup-body{font-size:13.5px;line-height:1.7;color:var(--text2)}
 
 /* Rest timer */
-.timer-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(17,24,39,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:12px 20px;padding-bottom:calc(12px + var(--safe-bottom));display:flex;justify-content:space-between;align-items:center;z-index:200}
-.timer-running{border-top-color:rgba(76,175,80,0.4)}
-.timer-left{display:flex;align-items:center;gap:12px;cursor:pointer;flex:1}
-.timer-icon{font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.3);border-radius:50%;color:var(--green)}
-.timer-running .timer-icon{background:rgba(76,175,80,0.25);box-shadow:0 0 12px rgba(76,175,80,0.3)}
-.timer-display{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;color:var(--text);direction:ltr}
+.timer-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,23,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:10px 20px;padding-bottom:calc(10px + var(--safe-bottom));display:flex;justify-content:space-between;align-items:center;z-index:200}
+.timer-running{border-top-color:rgba(76,175,80,0.3)}
+.timer-left{display:flex;align-items:center;gap:10px;cursor:pointer;flex:1}
+.timer-icon{font-size:14px;color:var(--text3)}
+.timer-running .timer-icon{color:var(--green)}
+.timer-display{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:0.5px;color:var(--text2);direction:ltr}
 .timer-running .timer-display{color:var(--green)}
-.timer-reset{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 16px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:'Heebo';transition:all 0.15s}
-.timer-reset:active{transform:scale(0.95);background:rgba(255,255,255,0.1)}
+.timer-reset{background:none;border:none;color:var(--text3);font-size:12px;font-weight:500;cursor:pointer;font-family:'Heebo';padding:6px 10px;transition:color 0.15s}
+.timer-reset:active{color:var(--text)}
 
 /* 4 tabs fit */
 .tab{padding:7px 10px;font-size:12.5px}
