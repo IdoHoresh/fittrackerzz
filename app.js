@@ -826,7 +826,7 @@ function render() {
     html += `<div class="workout-view">`;
 
     if (!wType) {
-      html += `<div class="wo-rest"><div class="wo-rest-icon">😴</div><div class="wo-rest-title">יום מנוחה</div><div class="wo-rest-sub">אין אימון היום</div></div>`;
+      html += `<div class="wo-rest"><div class="wo-rest-icon">😴</div><div class="wo-rest-title">Rest Day</div><div class="wo-rest-sub">No workout today</div></div>`;
     } else {
       const wo = WORKOUTS[wType];
       html += `<h2 class="wo-title">${wo.icon} ${wo.label}</h2>`;
@@ -834,7 +834,7 @@ function render() {
       const log = d.workoutLog || {};
 
       wo.groups.forEach((group, gIdx) => {
-        const groupLabel = group.type === "superset" ? `${group.tag} (סופרסט)` : group.type === "cluster" ? `${group.tag} (קלאסטר)` : group.tag;
+        const groupLabel = group.type === "superset" ? `${group.tag} (superset)` : group.type === "cluster" ? `${group.tag} (cluster)` : group.tag;
         html += `<div class="wo-group stagger-in" style="animation-delay:${gIdx * 0.06}s">`;
         html += `<div class="wo-group-header">${groupLabel}</div>`;
 
@@ -856,20 +856,20 @@ function render() {
               <div class="wo-ex-target">${ex.sets} × ${ex.reps}</div>
             </div>
             <div class="wo-ex-sub">${ex.sub}</div>
-            <div class="wo-ex-last">אחרון: ${lastStr}</div>`;
+            <div class="wo-ex-last">Last: <span class="wo-ex-last-val">${lastStr}</span></div>`;
 
           displaySets.forEach((s, sIdx) => {
             html += `<div class="wo-set-row">
               <span class="wo-set-num">${sIdx + 1}</span>
-              <input type="number" class="wo-input" placeholder="ק״ג" value="${s.weight}" oninput="saveWorkoutSet('${ex.id}',${sIdx},'weight',this.value)">
+              <input type="number" class="wo-input" placeholder="kg" value="${s.weight}" oninput="saveWorkoutSet('${ex.id}',${sIdx},'weight',this.value)">
               <span class="wo-x">×</span>
-              <input type="number" class="wo-input" placeholder="חזרות" value="${s.reps}" oninput="saveWorkoutSet('${ex.id}',${sIdx},'reps',this.value)">
+              <input type="number" class="wo-input" placeholder="reps" value="${s.reps}" oninput="saveWorkoutSet('${ex.id}',${sIdx},'reps',this.value)">
             </div>`;
           });
 
           html += `<div class="wo-set-actions">
-              <button class="wo-add-set" onclick="addWorkoutSet('${ex.id}')">+ סט</button>
-              ${sets.length > targetSets ? `<button class="wo-rm-set" onclick="removeWorkoutSet('${ex.id}')">− סט</button>` : ""}
+              <button class="wo-add-set" onclick="addWorkoutSet('${ex.id}')">+ Set</button>
+              ${sets.length > targetSets ? `<button class="wo-rm-set" onclick="removeWorkoutSet('${ex.id}')">− Set</button>` : ""}
             </div>`;
           html += `</div>`;
         });
@@ -881,7 +881,7 @@ function render() {
       const allExercises = wo.groups.flatMap(g => g.exercises);
       const selEx = state.woChartEx || allExercises[0].id;
       html += `<div class="wo-progression stagger-in" style="animation-delay:0.4s">
-        <h3 class="wo-prog-title">📈 התקדמות</h3>
+        <h3 class="wo-prog-title">📈 Progression</h3>
         <select class="wo-prog-select" onchange="state.woChartEx=this.value;renderWorkoutChart()">
           ${allExercises.map(ex => `<option value="${ex.id}" ${selEx === ex.id ? "selected" : ""}>${ex.label}</option>`).join("")}
         </select>
