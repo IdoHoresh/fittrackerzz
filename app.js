@@ -2,7 +2,8 @@
 const CYCLE = ["upper", "lower", "rest"];
 const CYCLE_LABELS = { upper: "עליון", lower: "תחתון", rest: "מנוחה" };
 const CYCLE_EMOJI = { upper: "💪", lower: "🦵", rest: "😴" };
-const START = "2026-04-05";
+const DEFAULT_START = "2026-04-05";
+let START = localStorage.getItem("fittrack_cycle_start") || DEFAULT_START;
 
 const SCHEDULE = [
   { id: "wake", time: "07:30", label: "השכמה", icon: "☀️", cat: "routine", detail: "" },
@@ -649,12 +650,22 @@ function cycleWorkoutType() {
   const current = state.dayData.workoutType || cycleType(dateStr(state.date));
   const idx = CYCLE.indexOf(current);
   const next = CYCLE[(idx + 1) % CYCLE.length];
-  state.dayData.workoutType = next;
-  // Update aerobic based on new type
+
+  // Shift the cycle start so that this day produces `next`,
+  // and all future days follow the new rotation
   const ds = dateStr(state.date);
-  const diff = Math.floor((new Date(ds) - new Date(START)) / 864e5);
-  const c = ((diff % 6) + 6) % 6;
-  state.dayData.hasAerobic = next !== "rest" && c < 3;
+  const targetIdx = CYCLE.indexOf(next);
+  // We need: (daysDiff % 3) === targetIdx
+  // So new START = this date minus targetIdx days
+  const thisDate = new Date(ds);
+  const newStart = new Date(thisDate);
+  newStart.setDate(newStart.getDate() - targetIdx);
+  START = dateStr(newStart);
+  localStorage.setItem("fittrack_cycle_start", START);
+
+  // Update this day's data to match
+  state.dayData.workoutType = next;
+  state.dayData.hasAerobic = hasAerobic(ds);
   saveDay();
 }
 
