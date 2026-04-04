@@ -530,14 +530,14 @@ function render() {
   // Header — rendered into permanent #header-root
   const bellIcon = state.notificationsEnabled ? "🔔" : "🔕";
   const headerHtml = `<div class="header-inner">
+    <div class="header-top">
+      <button class="notif-toggle ${state.notificationsEnabled ? "on" : ""}" onclick="toggleNotifications()" title="התראות">${bellIcon}</button>
+      <div class="logo"><span>FIT</span><span>TRACK</span></div>
+    </div>
     <div class="tabs">
       <button class="tab ${state.view === "today" ? "active" : ""}" onclick="setState('view','today')">📋 יומי</button>
       <button class="tab ${state.view === "weight" ? "active" : ""}" onclick="setState('view','weight');loadWeights().then(render)">⚖️ משקל</button>
       <button class="tab ${state.view === "shopping" ? "active" : ""}" onclick="setState('view','shopping')">🛒 קניות</button>
-    </div>
-    <div class="header-right">
-      <button class="notif-toggle ${state.notificationsEnabled ? "on" : ""}" onclick="toggleNotifications()" title="התראות">${bellIcon}</button>
-      <div class="logo"><span>FIT</span><span>TRACK</span></div>
     </div>
   </div>`;
 

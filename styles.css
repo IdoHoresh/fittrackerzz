@@ -9,10 +9,11 @@ input:focus{outline:none}
 
 /* Header */
 .header{background:linear-gradient(180deg,rgba(15,23,41,0.98),rgba(15,23,41,0.95));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 10px) 16px 10px;flex-shrink:0;z-index:100}
-.header-inner{display:flex;justify-content:space-between;align-items:center;max-width:600px;margin:0 auto}
+.header-inner{display:flex;flex-direction:column;gap:8px;max-width:600px;margin:0 auto}
+.header-top{display:flex;justify-content:space-between;align-items:center}
 .logo span:first-child{color:var(--green);font-weight:900;font-size:17px;letter-spacing:0.5px}
 .logo span:last-child{color:var(--text2);font-weight:700;font-size:17px;letter-spacing:0.5px}
-.tabs{display:flex;gap:6px}
+.tabs{display:flex;gap:6px;width:100%}
 .tab{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:var(--text2);border-radius:10px;padding:7px 16px;font-size:13px;font-family:'Heebo';font-weight:500;cursor:pointer;transition:all 0.2s}
 .tab.active{background:rgba(76,175,80,0.15);border-color:rgba(76,175,80,0.35);color:var(--green);box-shadow:0 0 12px rgba(76,175,80,0.1)}
 .header-right{display:flex;align-items:center;gap:10px}
@@ -183,7 +184,7 @@ input:focus{outline:none}
 
 /* Tabs overflow fix for 3 tabs */
 .tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tab{white-space:nowrap;flex-shrink:0;padding:7px 12px}
+.tab{white-space:nowrap;flex:1;padding:7px 12px;text-align:center}
 
 /* ── New Animations ── */
 
