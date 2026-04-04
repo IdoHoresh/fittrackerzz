@@ -234,6 +234,7 @@ async function toggleNotifications() {
     }
 
     try {
+      alert("Step 1: Getting SW registration...");
       const reg = await navigator.serviceWorker.ready;
 
       if (!reg.pushManager) {
@@ -241,25 +242,42 @@ async function toggleNotifications() {
         return;
       }
 
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
+      alert("Step 2: Subscribing to push...");
+      let sub;
+      try {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+      } catch (pushErr) {
+        alert("Push subscribe failed:\n" + pushErr.name + ": " + pushErr.message);
+        return;
+      }
 
-      // Send subscription to push server
-      const resp = await fetch(PUSH_SERVER + "/api/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sub)
-      });
+      alert("Step 3: Sending to server...\nEndpoint: " + sub.endpoint.substring(0, 60) + "...");
+      let resp;
+      try {
+        resp = await fetch(PUSH_SERVER + "/api/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(sub)
+        });
+      } catch (fetchErr) {
+        alert("Fetch failed:\n" + fetchErr.name + ": " + fetchErr.message);
+        return;
+      }
 
-      if (!resp.ok) throw new Error("Server returned " + resp.status);
+      if (!resp.ok) {
+        alert("Server error: " + resp.status);
+        return;
+      }
 
+      alert("Step 4: Success! Notifications enabled.");
       state.notificationsEnabled = true;
       localStorage.setItem("fittrack_notif", "true");
     } catch (err) {
       console.error("Push subscription failed:", err);
-      alert("שגיאה בהרשמה להתראות:\n" + err.message);
+      alert("שגיאה בהרשמה להתראות:\n" + err.name + ": " + err.message);
     }
   } else {
     // Turning off — unsubscribe
