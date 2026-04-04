@@ -1215,8 +1215,8 @@ async function loadSteps(ds) {
 }
 
 function syncSteps() {
-  // Open Shortcut to sync from Apple Health, then poll for result
-  window.location.href = "shortcuts://run-shortcut?name=Sync%20Steps";
+  // Open Shortcut to sync from Apple Health with callback to return to app
+  window.location.href = "shortcuts://x-callback-url/run-shortcut?name=Sync%20Steps&x-success=" + encodeURIComponent(window.location.href);
 }
 
 // ── Now Marker ──
