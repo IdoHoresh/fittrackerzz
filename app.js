@@ -599,6 +599,13 @@ function render() {
 
     // Timeline
     html += `<div class="timeline">`;
+    if (isToday) {
+      html += `<div class="now-marker" id="now-marker">
+        <span class="now-marker-label"></span>
+        <div class="now-marker-line"></div>
+        <div class="now-marker-dot"></div>
+      </div>`;
+    }
     SCHEDULE.forEach((item, idx) => {
       const done = d.completed[item.id];
       const note = d.notes[item.id];
@@ -837,6 +844,11 @@ function render() {
     if (inp) inp.focus();
   }
 
+  // Position "now" marker after DOM settles
+  if (isToday && state.view === "today") {
+    requestAnimationFrame(() => positionNowMarker());
+  }
+
   // Only animate items on first render / day change, not on toggles
   state.animateItems = false;
 }
@@ -909,6 +921,63 @@ function updateWeightBtn() {
   if (b) b.className = "weight-btn " + (state.weightInput ? "ready" : "idle");
 }
 
+// ── Now Marker ──
+function timeToMinutes(timeStr) {
+  const [h, m] = timeStr.split(":").map(Number);
+  // Treat times before 06:00 as next day (e.g., 01:00 = 25*60)
+  return (h < 6 ? h + 24 : h) * 60 + m;
+}
+
+function positionNowMarker() {
+  const marker = document.getElementById("now-marker");
+  if (!marker) return;
+
+  const items = document.querySelectorAll(".tl-item");
+  if (items.length < 2) return;
+
+  const now = new Date();
+  const nowMin = timeToMinutes(now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0"));
+
+  const times = SCHEDULE.map(s => timeToMinutes(s.time));
+
+  // Find which two items we're between
+  let beforeIdx = -1;
+  for (let i = 0; i < times.length; i++) {
+    if (nowMin >= times[i]) beforeIdx = i;
+  }
+
+  const timeline = document.querySelector(".timeline");
+  if (!timeline) return;
+  const timelineRect = timeline.getBoundingClientRect();
+
+  let topPx;
+  if (beforeIdx === -1) {
+    // Before first item
+    const firstRect = items[0].getBoundingClientRect();
+    topPx = firstRect.top + firstRect.height / 2 - timelineRect.top;
+  } else if (beforeIdx === times.length - 1) {
+    // After last item
+    const lastRect = items[items.length - 1].getBoundingClientRect();
+    topPx = lastRect.top + lastRect.height / 2 - timelineRect.top;
+  } else {
+    // Between two items
+    const aRect = items[beforeIdx].getBoundingClientRect();
+    const bRect = items[beforeIdx + 1].getBoundingClientRect();
+    const aY = aRect.top + aRect.height / 2 - timelineRect.top;
+    const bY = bRect.top + bRect.height / 2 - timelineRect.top;
+    const frac = (nowMin - times[beforeIdx]) / (times[beforeIdx + 1] - times[beforeIdx]);
+    topPx = aY + (bY - aY) * frac;
+  }
+
+  marker.style.top = topPx + "px";
+
+  // Update label
+  const label = marker.querySelector(".now-marker-label");
+  if (label) {
+    label.textContent = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
+  }
+}
+
 // ── Ripple Effect ──
 function initRipple() {
   document.addEventListener("pointerdown", e => {
@@ -971,4 +1040,11 @@ openDB().then(async () => {
   initSwipe();
   initRipple();
   ensurePushSubscription();
+
+  // Update "now" marker every 60 seconds
+  setInterval(() => {
+    if (state.view === "today" && dateStr(state.date) === dateStr(new Date())) {
+      positionNowMarker();
+    }
+  }, 60000);
 });
