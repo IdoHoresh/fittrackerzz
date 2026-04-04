@@ -15,7 +15,7 @@ const SCHEDULE = [
   { id: "workout", time: "20:00", label: "אימון", icon: "🏋️", cat: "workout", detail: "" },
   { id: "shake", time: "22:30", label: "שייק אחרי אימון", icon: "🥤", cat: "meal", detail: "סקופ חלבון + 2 תמרים / בננה\n(ביום מנוחה: חלבון בלבד)" },
   { id: "meal5", time: "23:15", label: "ארוחת לילה", icon: "🌙", cat: "meal", detail: "יוגורט חלבון 110 קל׳" },
-  { id: "sleep", time: "01:00", label: "שינה", icon: "😴", cat: "routine", detail: "לפחות 7 שעות רצופות" }
+  { id: "sleep", time: "00:00", label: "שינה", icon: "😴", cat: "routine", detail: "לפחות 7 שעות רצופות" }
 ];
 
 const CAT_COLORS = {
@@ -1242,8 +1242,7 @@ function syncSteps() {
 // ── Now Marker ──
 function timeToMinutes(timeStr) {
   const [h, m] = timeStr.split(":").map(Number);
-  // Treat times before 06:00 as next day (e.g., 01:00 = 25*60)
-  return (h < 6 ? h + 24 : h) * 60 + m;
+  return h * 60 + m;
 }
 
 function positionNowMarker() {
