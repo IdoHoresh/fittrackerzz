@@ -669,16 +669,29 @@ function render() {
       </div>`;
     }
 
-    // Badges (tap to change workout type)
+    // Badges (tap to open workout type selector)
     const bounceClass = state.badgeBounce ? " badge-bounce" : "";
     html += `<div class="badges">
-      <div class="badge ${isRest ? "badge-rest" : "badge-workout"} badge-tap${bounceClass}" onclick="cycleWorkoutType()">
+      <div class="badge ${isRest ? "badge-rest" : "badge-workout"} badge-tap${bounceClass}" onclick="toggleWorkoutPicker()">
         <span style="font-size:18px">${CYCLE_EMOJI[ct]}</span>
         ${isRest ? "יום מנוחה" : "אימון " + CYCLE_LABELS[ct]}
-        <span class="badge-edit">✏️</span>
+        <span class="badge-edit">▼</span>
       </div>
       ${aero && !isRest ? `<div class="badge badge-aerobic"><span>🏃</span> 30 דק׳ אירובי</div>` : ""}
     </div>`;
+
+    // Workout type picker dropdown
+    if (state.showWorkoutPicker) {
+      html += `<div class="wo-picker">`;
+      CYCLE.forEach(type => {
+        const active = ct === type ? " wo-picker-active" : "";
+        html += `<div class="wo-picker-item${active}" onclick="selectWorkoutType('${type}')">
+          <span>${CYCLE_EMOJI[type]}</span>
+          <span>${type === "rest" ? "יום מנוחה" : CYCLE_LABELS[type]}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
 
     // Progress
     html += `<div class="progress-box ${isComplete ? "complete" : ""}">
@@ -1025,6 +1038,30 @@ function render() {
 
   // Only animate items on first render / day change, not on toggles
   state.animateItems = false;
+}
+
+function toggleWorkoutPicker() {
+  saveScrollPosition();
+  state.showWorkoutPicker = !state.showWorkoutPicker;
+  render();
+}
+
+function selectWorkoutType(type) {
+  saveScrollPosition();
+  state.showWorkoutPicker = false;
+  state.badgeBounce = true;
+
+  const ds = dateStr(state.date);
+  const targetIdx = CYCLE.indexOf(type);
+  const thisDate = new Date(ds);
+  const newStart = new Date(thisDate);
+  newStart.setDate(newStart.getDate() - targetIdx);
+  START = dateStr(newStart);
+  localStorage.setItem("fittrack_cycle_start", START);
+
+  state.dayData.workoutType = type;
+  state.dayData.hasAerobic = hasAerobic(ds);
+  saveDay();
 }
 
 function cycleWorkoutType() {
