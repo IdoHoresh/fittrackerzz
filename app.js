@@ -837,7 +837,7 @@ function render() {
       <div class="ach-summary" onclick="state.showAchievements=!state.showAchievements;render()">
         <div class="ach-summary-left">
           <span class="ach-summary-icon">🏆</span>
-          <span class="ach-summary-text">${unlockedCount}/${totalAch} הישגים</span>
+          <span class="ach-summary-text">הישגים ${unlockedCount}/${totalAch}</span>
         </div>
         <span class="ach-summary-arrow">${state.showAchievements ? "▲" : "▼"}</span>
       </div>
