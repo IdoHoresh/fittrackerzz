@@ -762,6 +762,15 @@ function render() {
     });
     html += `</div>`;
 
+    // Steps
+    html += `<div class="steps-box" id="steps-box">
+      <span class="steps-icon">👟</span>
+      <div class="steps-info">
+        <div class="steps-label">צעדים היום</div>
+        <div class="steps-val" id="steps-val">—</div>
+      </div>
+    </div>`;
+
     // Water
     html += `<div class="water-box">
       <span class="icon">💧</span>
@@ -1030,6 +1039,11 @@ function render() {
     renderWorkoutChart();
   }
 
+  // Load steps for today
+  if (state.view === "today") {
+    loadSteps(ds);
+  }
+
   // Position "now" marker after DOM settles
   if (isToday && state.view === "today") {
     requestAnimationFrame(() => positionNowMarker());
@@ -1181,6 +1195,16 @@ function startEdit(id, existing) { saveScrollPosition(); state.editingNote = id;
 function updateWeightBtn() {
   const b = document.getElementById("weightBtn");
   if (b) b.className = "weight-btn " + (state.weightInput ? "ready" : "idle");
+}
+
+// ── Steps ──
+async function loadSteps(ds) {
+  try {
+    const resp = await fetch(PUSH_SERVER + "/api/steps?date=" + ds);
+    const data = await resp.json();
+    const el = document.getElementById("steps-val");
+    if (el) el.textContent = data.steps > 0 ? data.steps.toLocaleString() : "—";
+  } catch (e) {}
 }
 
 // ── Now Marker ──

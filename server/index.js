@@ -65,6 +65,50 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", subscribers: loadSubs().length });
 });
 
+// ── Steps tracking ──
+const STEPS_FILE = path.join(__dirname, "steps.json");
+
+function loadSteps() {
+  try {
+    if (fs.existsSync(STEPS_FILE)) return JSON.parse(fs.readFileSync(STEPS_FILE, "utf8"));
+  } catch (e) {}
+  return {};
+}
+
+function saveSteps(data) {
+  fs.writeFileSync(STEPS_FILE, JSON.stringify(data, null, 2));
+}
+
+// POST /api/steps — save steps for a date { date: "2026-04-04", steps: 8500 }
+app.post("/api/steps", (req, res) => {
+  const { date, steps } = req.body;
+  if (!date || steps === undefined) return res.status(400).json({ error: "Missing date or steps" });
+  const data = loadSteps();
+  data[date] = parseInt(steps) || 0;
+  saveSteps(data);
+  console.log(`[steps] ${date}: ${data[date]}`);
+  res.json({ ok: true, date, steps: data[date] });
+});
+
+// GET /api/steps?date=2026-04-04 or /api/steps?days=7
+app.get("/api/steps", (req, res) => {
+  const data = loadSteps();
+  if (req.query.date) {
+    return res.json({ date: req.query.date, steps: data[req.query.date] || 0 });
+  }
+  // Return last N days
+  const days = parseInt(req.query.days) || 7;
+  const result = {};
+  const now = new Date();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split("T")[0];
+    result[ds] = data[ds] || 0;
+  }
+  res.json(result);
+});
+
 // Test push — send a test notification to all subscribers
 app.post("/api/test", async (req, res) => {
   const subs = loadSubs();
