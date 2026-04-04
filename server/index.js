@@ -1,0 +1,147 @@
+const express = require("express");
+const cors = require("cors");
+const webpush = require("web-push");
+const cron = require("node-cron");
+const fs = require("fs");
+const path = require("path");
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// VAPID keys — set via env vars in production
+const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || "BBzsqZhI0Mb7UgBf2U9QahzTLl3MY_FnuWOUaMwIDvkfRQ3KWRbXuPuqNEIQgLJnjTAL0yTwqw1DkLpGaxeheGQ";
+const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY || "tKnqnHaVgjmd-2gV29p1wpgF02HH2QhCAtH1qWZ_gUg";
+
+webpush.setVapidDetails("mailto:fittrack@example.com", VAPID_PUBLIC, VAPID_PRIVATE);
+
+// Store subscriptions in a JSON file (simple persistence)
+const SUBS_FILE = path.join(__dirname, "subscriptions.json");
+
+function loadSubs() {
+  try {
+    if (fs.existsSync(SUBS_FILE)) return JSON.parse(fs.readFileSync(SUBS_FILE, "utf8"));
+  } catch (e) {}
+  return [];
+}
+
+function saveSubs(subs) {
+  fs.writeFileSync(SUBS_FILE, JSON.stringify(subs, null, 2));
+}
+
+// ── Routes ──
+
+app.get("/api/vapid-public-key", (req, res) => {
+  res.json({ publicKey: VAPID_PUBLIC });
+});
+
+app.post("/api/subscribe", (req, res) => {
+  const sub = req.body;
+  if (!sub || !sub.endpoint) return res.status(400).json({ error: "Invalid subscription" });
+
+  const subs = loadSubs();
+  // Avoid duplicates
+  if (!subs.find(s => s.endpoint === sub.endpoint)) {
+    subs.push(sub);
+    saveSubs(subs);
+    console.log(`[subscribe] New subscription added. Total: ${subs.length}`);
+  }
+  res.json({ ok: true });
+});
+
+app.post("/api/unsubscribe", (req, res) => {
+  const { endpoint } = req.body;
+  if (!endpoint) return res.status(400).json({ error: "Missing endpoint" });
+
+  let subs = loadSubs();
+  subs = subs.filter(s => s.endpoint !== endpoint);
+  saveSubs(subs);
+  console.log(`[unsubscribe] Removed. Total: ${subs.length}`);
+  res.json({ ok: true });
+});
+
+// Health check
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", subscribers: loadSubs().length });
+});
+
+// Test push — send a test notification to all subscribers
+app.post("/api/test", async (req, res) => {
+  const subs = loadSubs();
+  if (subs.length === 0) return res.json({ ok: false, error: "No subscribers" });
+  await sendToAll("🔔 בדיקת התראות", "ההתראות עובדות! FitTrack מחובר", "fittrack-test");
+  res.json({ ok: true, sent: subs.length });
+});
+
+// ── Send notification to all subscribers ──
+async function sendToAll(title, body, tag) {
+  const subs = loadSubs();
+  const expired = [];
+
+  for (const sub of subs) {
+    try {
+      await webpush.sendNotification(sub, JSON.stringify({ title, body, tag, dir: "rtl", lang: "he" }));
+    } catch (err) {
+      if (err.statusCode === 404 || err.statusCode === 410) {
+        // Subscription expired or invalid
+        expired.push(sub.endpoint);
+      } else {
+        console.error(`[push error] ${err.message}`);
+      }
+    }
+  }
+
+  // Clean up expired subscriptions
+  if (expired.length > 0) {
+    const cleaned = subs.filter(s => !expired.includes(s.endpoint));
+    saveSubs(cleaned);
+    console.log(`[cleanup] Removed ${expired.length} expired subscriptions`);
+  }
+}
+
+// ── Schedule: daily meal/task reminders ──
+// Times are in Israel timezone (Asia/Jerusalem)
+const SCHEDULE = [
+  { time: "30 7", label: "השכמה", icon: "☀️", tag: "wake" },
+  { time: "45 7", label: "ארוחת בוקר", icon: "🍳", tag: "meal1" },
+  { time: "0 8", label: "יציאה לעבודה", icon: "💼", tag: "work" },
+  { time: "30 12", label: "ארוחת צהריים", icon: "🥗", tag: "meal2" },
+  { time: "0 16", label: "ארוחת ביניים", icon: "🥜", tag: "meal3" },
+  { time: "0 19", label: "ארוחת ערב", icon: "🍽️", tag: "meal4" },
+  { time: "0 20", label: "אימון", icon: "🏋️", tag: "workout" },
+  { time: "30 22", label: "שייק אחרי אימון", icon: "🥤", tag: "shake" },
+  { time: "15 23", label: "ארוחת לילה", icon: "🌙", tag: "meal5" },
+  { time: "0 1", label: "שינה", icon: "😴", tag: "sleep" }
+];
+
+SCHEDULE.forEach(item => {
+  // Cron: minute hour * * * (runs daily)
+  cron.schedule(`${item.time} * * *`, () => {
+    console.log(`[cron] Sending: ${item.icon} ${item.label}`);
+    sendToAll(`${item.icon} ${item.label}`, item.time.split(" ").reverse().join(":"), `fittrack-${item.tag}`);
+  }, { timezone: "Asia/Jerusalem" });
+});
+
+// ── Shopping day reminder: every 2 weeks on Sunday at 09:00 ──
+const SHOP_CYCLE_START = new Date("2026-04-05");
+
+cron.schedule("0 9 * * 0", () => {
+  // Check if this Sunday is a shopping week (every 2 weeks from start)
+  const now = new Date();
+  const diffDays = Math.floor((now - SHOP_CYCLE_START) / 864e5);
+  if (diffDays >= 0 && diffDays % 14 < 7) {
+    // This is a shopping Sunday (within the first week of a 2-week cycle)
+    if (diffDays % 14 === 0) {
+      console.log("[cron] Shopping day notification!");
+      sendToAll("🛒 יום קניות!", "הגיע הזמן להשלים את רשימת הקניות לשבועיים", "fittrack-shopping");
+    }
+  }
+}, { timezone: "Asia/Jerusalem" });
+
+// ── Start ──
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`FitTrack push server running on port ${PORT}`);
+  console.log(`VAPID public key: ${VAPID_PUBLIC.substring(0, 20)}...`);
+  console.log(`Subscribers: ${loadSubs().length}`);
+});

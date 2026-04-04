@@ -182,133 +182,91 @@ let state = {
   shopCat: "produce"
 };
 
-// ── Notifications ──
-let _notifTimers = {}; // { taskId: timeoutId }
+// ── Push Notifications (server-based) ──
+const PUSH_SERVER = localStorage.getItem("fittrack_push_server") || "https://fittrack-push.onrender.com";
+const VAPID_PUBLIC_KEY = "BBzsqZhI0Mb7UgBf2U9QahzTLl3MY_FnuWOUaMwIDvkfRQ3KWRbXuPuqNEIQgLJnjTAL0yTwqw1DkLpGaxeheGQ";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
 
 async function toggleNotifications() {
   if (!state.notificationsEnabled) {
-    // Turning on — request permission first
-    if (!("Notification" in window)) return;
+    // Turning on — request permission + subscribe to push
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
     const perm = await Notification.requestPermission();
     if (perm !== "granted") return;
-    state.notificationsEnabled = true;
-    localStorage.setItem("fittrack_notif", "true");
-    scheduleNotifications();
+
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+
+      // Send subscription to push server
+      await fetch(PUSH_SERVER + "/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sub)
+      });
+
+      state.notificationsEnabled = true;
+      localStorage.setItem("fittrack_notif", "true");
+    } catch (err) {
+      console.error("Push subscription failed:", err);
+    }
   } else {
-    // Turning off
+    // Turning off — unsubscribe
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await fetch(PUSH_SERVER + "/api/unsubscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: sub.endpoint })
+        });
+        await sub.unsubscribe();
+      }
+    } catch (err) {
+      console.error("Push unsubscribe failed:", err);
+    }
     state.notificationsEnabled = false;
     localStorage.setItem("fittrack_notif", "false");
-    cancelAllNotifications();
   }
   render();
 }
 
-function scheduleNotifications() {
-  cancelAllNotifications();
+// Re-subscribe on load if notifications were enabled (ensures subscription stays active)
+async function ensurePushSubscription() {
   if (!state.notificationsEnabled) return;
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
   if (Notification.permission !== "granted") return;
 
-  const now = new Date();
-  const todayStr = dateStr(now);
-  const d = state.dayData;
-  if (!d || d.date !== todayStr) return;
-
-  SCHEDULE.forEach(item => {
-    // Skip completed tasks
-    if (d.completed[item.id]) return;
-
-    // Parse scheduled time
-    const [h, m] = item.time.split(":").map(Number);
-    const taskTime = new Date(now);
-    taskTime.setHours(h, m, 0, 0);
-
-    // Handle times past midnight (e.g., 01:00 sleep)
-    if (h < 6) taskTime.setDate(taskTime.getDate() + 1);
-
-    const delay = taskTime - now;
-    if (delay <= 0) return; // Time already passed
-
-    _notifTimers[item.id] = setTimeout(() => {
-      showTaskNotification(item);
-    }, delay);
-  });
-
-  // Shopping day notification at 09:00
-  if (isShoppingDay(todayStr)) {
-    const shopTime = new Date(now);
-    shopTime.setHours(9, 0, 0, 0);
-    const shopDelay = shopTime - now;
-    if (shopDelay > 0) {
-      _notifTimers["_shopping"] = setTimeout(() => {
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: "showNotification",
-            title: "🛒 יום קניות!",
-            body: "הגיע הזמן להשלים את רשימת הקניות לשבועיים",
-            tag: "fittrack-shopping"
-          });
-        } else {
-          new Notification("🛒 יום קניות!", {
-            body: "הגיע הזמן להשלים את רשימת הקניות לשבועיים",
-            tag: "fittrack-shopping",
-            dir: "rtl",
-            lang: "he"
-          });
-        }
-      }, shopDelay);
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
     }
+    // Re-register with server (in case it lost the subscription)
+    fetch(PUSH_SERVER + "/api/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sub)
+    }).catch(() => {});
+  } catch (err) {
+    console.error("Push re-subscribe failed:", err);
   }
-
-  // Schedule midnight reschedule
-  const midnight = new Date(now);
-  midnight.setDate(midnight.getDate() + 1);
-  midnight.setHours(0, 0, 5, 0); // 00:00:05
-  const msToMidnight = midnight - now;
-  _notifTimers["_midnight"] = setTimeout(() => {
-    scheduleNotifications();
-  }, msToMidnight);
-}
-
-function showTaskNotification(item) {
-  const isW = item.id === "workout";
-  const ct = cycleType(dateStr(new Date()));
-  let body = item.time;
-  if (isW) {
-    body += " — אימון " + CYCLE_LABELS[ct];
-  } else if (item.detail) {
-    body += " — " + item.detail.split("\n")[0];
-  }
-
-  // Try service worker first, fall back to Notification API
-  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      type: "showNotification",
-      title: item.icon + " " + item.label,
-      body: body,
-      tag: "fittrack-" + item.id
-    });
-  } else {
-    new Notification(item.icon + " " + item.label, {
-      body: body,
-      tag: "fittrack-" + item.id,
-      dir: "rtl",
-      lang: "he"
-    });
-  }
-}
-
-function cancelNotification(id) {
-  if (_notifTimers[id]) {
-    clearTimeout(_notifTimers[id]);
-    delete _notifTimers[id];
-  }
-}
-
-function cancelAllNotifications() {
-  Object.keys(_notifTimers).forEach(id => {
-    clearTimeout(_notifTimers[id]);
-  });
-  _notifTimers = {};
 }
 
 function defaultDay(ds) {
@@ -381,9 +339,6 @@ function toggleComplete(id) {
   saveScrollPosition();
   state.dayData.completed[id] = !state.dayData.completed[id];
   state.lastToggled = id;
-
-  // Cancel notification for completed task
-  if (state.dayData.completed[id]) cancelNotification(id);
 
   const completedCount = SCHEDULE.filter(s => state.dayData.completed[s.id]).length;
   const justCompleted = state.dayData.completed[id] && completedCount === SCHEDULE.length;
@@ -989,5 +944,5 @@ openDB().then(async () => {
   render();
   initSwipe();
   initRipple();
-  scheduleNotifications();
+  ensurePushSubscription();
 });
