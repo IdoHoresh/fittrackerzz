@@ -193,7 +193,12 @@ function effectiveNow() {
   }
   return now;
 }
-function dateStr(d) { return d.toISOString().split("T")[0]; }
+function dateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 function dayName(d) { return DAYS[d.getDay()]; }
 function cycleType(ds) {
   const diff = Math.floor((new Date(ds) - new Date(START)) / 864e5);
