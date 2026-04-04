@@ -1297,15 +1297,32 @@ function positionNowMarker() {
 }
 
 // ── Personal Records ──
+// Find the minimum reps required for an exercise from its target range
+function getMinReps(exId) {
+  for (const wo of Object.values(WORKOUTS)) {
+    for (const g of wo.groups) {
+      for (const ex of g.exercises) {
+        if (ex.id === exId) {
+          const match = ex.reps.match(/^(\d+)/);
+          return match ? parseInt(match[1]) : 1;
+        }
+      }
+    }
+  }
+  return 1;
+}
+
 function getExercisePR(exId) {
-  // Find all-time max weight for this exercise across all days
+  // Find all-time max weight where reps met the minimum target
   if (!state._workoutHistory) return 0;
+  const minReps = getMinReps(exId);
   let max = 0;
   for (const day of state._workoutHistory) {
     if (!day.workoutLog || !day.workoutLog[exId]) continue;
     for (const set of day.workoutLog[exId]) {
       const w = parseFloat(set.weight) || 0;
-      if (w > max) max = w;
+      const r = parseInt(set.reps) || 0;
+      if (w > max && r >= minReps) max = w;
     }
   }
   return max;
@@ -1314,29 +1331,39 @@ function getExercisePR(exId) {
 function checkForNewPR(exId, weight) {
   const w = parseFloat(weight) || 0;
   if (w <= 0) return false;
-  const prevPR = getExercisePR(exId);
-  // Check current day's sets too (in case they already beat it earlier today)
+  const minReps = getMinReps(exId);
+  // Check if this set has enough reps
   const todaySets = (state.dayData.workoutLog && state.dayData.workoutLog[exId]) || [];
-  const todayMax = Math.max(0, ...todaySets.map(s => parseFloat(s.weight) || 0));
-  const allTimeBest = Math.max(prevPR, todayMax);
-  return w > prevPR && w >= todayMax;
+  const thisSet = todaySets.find(s => parseFloat(s.weight) === w);
+  const reps = thisSet ? (parseInt(thisSet.reps) || 0) : 0;
+  if (reps < minReps) return false;
+  const prevPR = getExercisePR(exId);
+  return w > prevPR;
 }
 
 function getTodayPRs() {
-  // Returns set of exercise IDs where today has a new PR
+  // Returns set of exercise IDs where today has a new PR (with valid reps)
   const prs = new Set();
   if (!state.dayData.workoutLog || !state._workoutHistory) return prs;
   for (const [exId, sets] of Object.entries(state.dayData.workoutLog)) {
-    const todayMax = Math.max(0, ...sets.map(s => parseFloat(s.weight) || 0));
+    const minReps = getMinReps(exId);
+    // Today's max weight WITH valid reps
+    let todayMax = 0;
+    for (const s of sets) {
+      const w = parseFloat(s.weight) || 0;
+      const r = parseInt(s.reps) || 0;
+      if (w > todayMax && r >= minReps) todayMax = w;
+    }
     if (todayMax <= 0) continue;
-    // Get max from all OTHER days
+    // Get max from all OTHER days (also with valid reps)
     let histMax = 0;
     for (const day of state._workoutHistory) {
       if (day.date === state.dayData.date) continue;
       if (!day.workoutLog || !day.workoutLog[exId]) continue;
       for (const set of day.workoutLog[exId]) {
         const w = parseFloat(set.weight) || 0;
-        if (w > histMax) histMax = w;
+        const r = parseInt(set.reps) || 0;
+        if (w > histMax && r >= minReps) histMax = w;
       }
     }
     if (todayMax > histMax && histMax > 0) prs.add(exId);
