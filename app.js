@@ -33,88 +33,88 @@ const WORKOUT_DAYS = { 1: "upper", 2: "lowerA", 3: null, 4: "chestBack", 5: "low
 const WORKOUTS = {
   upper: { label: "UPPER", icon: "💪", groups: [
     { tag: "A", type: "superset", exercises: [
-      { id: "upper-back-row", label: "Upper Back Row", sub: "מכונת חתירה / כבל / משקל חופשי", sets: 4, reps: "5-8", note: "Overhand grip, elbows 45-70° flared, scapular retraction" },
-      { id: "incline-bench", label: "Incline Bench Press", sub: "סמית׳ / דמבלים", sets: 4, reps: "5-8", note: "" }
+      { id: "upper-back-row", label: "Upper Back Row", sub: "Row machine / Cable / Free weight", sets: 4, reps: "5-8", note: "Overhand grip, elbows 45-70° flared, scapular retraction" },
+      { id: "incline-bench", label: "Incline Bench Press", sub: "Smith machine / Dumbbells", sets: 4, reps: "5-8", note: "" }
     ]},
     { tag: "B", type: "superset", exercises: [
-      { id: "lat-pulldown", label: "Lat Pulldowns", sub: "ניוטרל גריפ / חד-צדדי", sets: 3, reps: "8-12", note: "Neutral grip, lat bias, elbows close to sides" },
-      { id: "flat-press", label: "Flat Press", sub: "מכונה / דמבלים / ברבל", sets: 3, reps: "8-12", note: "" }
+      { id: "lat-pulldown", label: "Lat Pulldowns", sub: "Neutral grip / Unilateral", sets: 3, reps: "8-12", note: "Neutral grip, lat bias, elbows close to sides" },
+      { id: "flat-press", label: "Flat Press", sub: "Machine / Dumbbells / Barbell", sets: 3, reps: "8-12", note: "" }
     ]},
     { tag: "C", type: "cluster", exercises: [
-      { id: "tricep-ext-overhead", label: "Tricep Extensions (overhead)", sub: "כבל נמוך לגבוה", sets: 1, reps: "12-15 + 3 clusters", note: "Rest 15-20s between clusters" }
+      { id: "tricep-ext-overhead", label: "Tricep Extensions (overhead)", sub: "Cable low-to-high", sets: 1, reps: "12-15 + 3 clusters", note: "Rest 15-20s between clusters" }
     ]},
     { tag: "D", type: "cluster", exercises: [
-      { id: "cable-curls", label: "Standing Cable Curls", sub: "מרפקים צמודים לגוף", sets: 1, reps: "12-15 + 3 clusters", note: "" }
+      { id: "cable-curls", label: "Standing Cable Curls", sub: "Elbows close to sides", sets: 1, reps: "12-15 + 3 clusters", note: "" }
     ]},
     { tag: "E", type: "cluster", exercises: [
-      { id: "lateral-raise", label: "Lateral Raise", sub: "דמבלים / כבל", sets: 1, reps: "12-15 + 3 clusters", note: "Scapular plane" }
+      { id: "lateral-raise", label: "Lateral Raise", sub: "Dumbbells / Cable", sets: 1, reps: "12-15 + 3 clusters", note: "Scapular plane" }
     ]}
   ]},
   lowerA: { label: "LOWER A", icon: "🦵", groups: [
     { tag: "A", type: "single", exercises: [
-      { id: "bb-rdl", label: "BB RDLs", sub: "ברבל", sets: 3, reps: "6-10", note: "Rest 3-4 min" }
+      { id: "bb-rdl", label: "BB RDLs", sub: "Barbell", sets: 3, reps: "6-10", note: "Rest 3-4 min" }
     ]},
     { tag: "B", type: "single", exercises: [
-      { id: "leg-press", label: "Leg Press", sub: "מכונה, דגש על קוואדס", sets: 3, reps: "6-10", note: "Rest 3-4 min" }
+      { id: "leg-press", label: "Leg Press", sub: "Machine, quad bias", sets: 3, reps: "6-10", note: "Rest 3-4 min" }
     ]},
     { tag: "C", type: "superset", exercises: [
-      { id: "lying-leg-curls", label: "Lying Leg Curls", sub: "מכונה", sets: 3, reps: "12-15", note: "" },
-      { id: "split-squats", label: "Split Squats (rear foot elevated)", sub: "סמית׳ / דמבלים", sets: 2, reps: "8-10", note: "Glute bias" }
+      { id: "lying-leg-curls", label: "Lying Leg Curls", sub: "Machine", sets: 3, reps: "12-15", note: "" },
+      { id: "split-squats", label: "Split Squats (rear foot elevated)", sub: "Smith machine / Dumbbells", sets: 2, reps: "8-10", note: "Glute bias" }
     ]},
     { tag: "D", type: "single", exercises: [
-      { id: "standing-calf-a", label: "Standing Calf Raises", sub: "השהייה 2 שניות במתיחה", sets: 4, reps: "8-12", note: "" }
+      { id: "standing-calf-a", label: "Standing Calf Raises", sub: "2s pause in stretch", sets: 4, reps: "8-12", note: "" }
     ]},
     { tag: "E", type: "single", exercises: [
-      { id: "reverse-crunches", label: "Reverse Crunches", sub: "משקל גוף", sets: 3, reps: "max", note: "" }
+      { id: "reverse-crunches", label: "Reverse Crunches", sub: "Bodyweight", sets: 3, reps: "max", note: "" }
     ]}
   ]},
   chestBack: { label: "CHEST / BACK", icon: "🏋️", groups: [
     { tag: "A", type: "superset", exercises: [
-      { id: "flat-bench", label: "Flat Bench Press", sub: "ברבל / סמית׳", sets: 3, reps: "5-8", note: "" },
-      { id: "rows-lat", label: "Rows (lat bias)", sub: "חתירת דמבל / כבל ישיבה / HS Low Row", sets: 3, reps: "5-8", note: "Elbows close, neutral ribcage" }
+      { id: "flat-bench", label: "Flat Bench Press", sub: "Barbell / Smith machine", sets: 3, reps: "5-8", note: "" },
+      { id: "rows-lat", label: "Rows (lat bias)", sub: "DB Row / Seated Cable Row / HS Low Row", sets: 3, reps: "5-8", note: "Elbows close, neutral ribcage" }
     ]},
     { tag: "B", type: "superset", exercises: [
-      { id: "incline-press-b", label: "Incline Press", sub: "מכונה / דמבלים", sets: 3, reps: "8-12", note: "" },
+      { id: "incline-press-b", label: "Incline Press", sub: "Machine / Dumbbells", sets: 3, reps: "8-12", note: "" },
       { id: "wide-pulldown", label: "Wide Grip Pulldown", sub: "Overhand grip / Pull-ups", sets: 3, reps: "8-12", note: "Upper back bias, scapular retraction" }
     ]},
     { tag: "C", type: "single", exercises: [
-      { id: "cable-flys", label: "High to Low Cable Flys", sub: "כבלים", sets: 2, reps: "12-15", note: "" }
+      { id: "cable-flys", label: "High to Low Cable Flys", sub: "Cables", sets: 2, reps: "12-15", note: "" }
     ]},
     { tag: "D", type: "single", exercises: [
-      { id: "lat-prayers", label: "Cable Lat Prayers / Pullovers", sub: "כבל", sets: 2, reps: "12-15", note: "Don't exceed 120° shoulder flexion" }
+      { id: "lat-prayers", label: "Cable Lat Prayers / Pullovers", sub: "Cable", sets: 2, reps: "12-15", note: "Don't exceed 120° shoulder flexion" }
     ]}
   ]},
   lowerB: { label: "LOWER B", icon: "🦵", groups: [
     { tag: "A", type: "single", exercises: [
-      { id: "back-squats", label: "Back Squats", sub: "ברבל", sets: 3, reps: "5-8", note: "Rest 3-4 min" }
+      { id: "back-squats", label: "Back Squats", sub: "Barbell", sets: 3, reps: "5-8", note: "Rest 3-4 min" }
     ]},
     { tag: "B", type: "superset", exercises: [
-      { id: "seated-leg-curls", label: "Seated Leg Curls", sub: "מכונה", sets: 4, reps: "8-12", note: "" },
-      { id: "leg-extensions", label: "Leg Extensions", sub: "מכונה", sets: 3, reps: "12-15", note: "" }
+      { id: "seated-leg-curls", label: "Seated Leg Curls", sub: "Machine", sets: 4, reps: "8-12", note: "" },
+      { id: "leg-extensions", label: "Leg Extensions", sub: "Machine", sets: 3, reps: "12-15", note: "" }
     ]},
     { tag: "C", type: "single", exercises: [
-      { id: "standing-calf-b", label: "Standing Calf Raises", sub: "השהייה 2 שניות במתיחה", sets: 4, reps: "12-15", note: "" }
+      { id: "standing-calf-b", label: "Standing Calf Raises", sub: "2s pause in stretch", sets: 4, reps: "12-15", note: "" }
     ]},
     { tag: "D", type: "single", exercises: [
-      { id: "rope-crunches", label: "Rope Crunches", sub: "כבל", sets: 3, reps: "8-12", note: "" }
+      { id: "rope-crunches", label: "Rope Crunches", sub: "Cable", sets: 3, reps: "8-12", note: "" }
     ]}
   ]},
   shouldersArms: { label: "SHOULDERS / ARMS", icon: "💪", groups: [
     { tag: "A", type: "single", exercises: [
-      { id: "delt-press", label: "Anterior Delt Press", sub: "דמבלים / מכונה", sets: 3, reps: "6-10", note: "Rest 3+ min" }
+      { id: "delt-press", label: "Anterior Delt Press", sub: "Dumbbells / Machine", sets: 3, reps: "6-10", note: "Rest 3+ min" }
     ]},
     { tag: "B", type: "superset", exercises: [
-      { id: "bayesian-curls", label: "Bayesian Cable Curls", sub: "כבל, כתף 20-30° אקסטנשן", sets: 3, reps: "12-15", note: "" },
-      { id: "rope-tricep-ext", label: "Rope Tricep Extensions", sub: "כבל גבוה לנמוך", sets: 3, reps: "12-15", note: "" }
+      { id: "bayesian-curls", label: "Bayesian Cable Curls", sub: "Cable, shoulder 20-30° extension", sets: 3, reps: "12-15", note: "" },
+      { id: "rope-tricep-ext", label: "Rope Tricep Extensions", sub: "Cable high-to-low", sets: 3, reps: "12-15", note: "" }
     ]},
     { tag: "C", type: "single", exercises: [
-      { id: "cable-lateral", label: "Cable Lateral Raises", sub: "כבל", sets: 4, reps: "12-15", note: "" }
+      { id: "cable-lateral", label: "Cable Lateral Raises", sub: "Cable", sets: 4, reps: "12-15", note: "" }
     ]},
     { tag: "D", type: "cluster", exercises: [
-      { id: "hammer-curls", label: "Hammer Curls", sub: "דמבלים / כבל", sets: 1, reps: "12-15 + 3 clusters", note: "Rest 15-20s between clusters" }
+      { id: "hammer-curls", label: "Hammer Curls", sub: "Dumbbells / Cable", sets: 1, reps: "12-15 + 3 clusters", note: "Rest 15-20s between clusters" }
     ]},
     { tag: "E", type: "cluster", exercises: [
-      { id: "tricep-ext-oh-b", label: "Tricep Extensions (overhead)", sub: "כבל נמוך לגבוה", sets: 1, reps: "12-15 + 3 clusters", note: "" }
+      { id: "tricep-ext-oh-b", label: "Tricep Extensions (overhead)", sub: "Cable low-to-high", sets: 1, reps: "12-15 + 3 clusters", note: "" }
     ]}
   ]}
 };
