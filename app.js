@@ -888,6 +888,12 @@ function render() {
       <div><div class="title">תזכורת מים</div><div class="sub">לפחות 3 ליטר + 500-750 מ"ל על שעת אימון</div></div>
     </div>`;
 
+    // Data backup
+    html += `<div class="backup-box">
+      <button class="backup-btn" onclick="exportData()">💾 גיבוי נתונים</button>
+      <button class="backup-btn backup-import" onclick="importData()">📂 ייבוא גיבוי</button>
+    </div>`;
+
   } else if (state.view === "weight") {
     // Weight view
     html += `<div class="weight-view"><h2>⚖️ מעקב משקל</h2>`;
@@ -1320,6 +1326,55 @@ function resetShopping() {
   state.shopping.checked = {};
   saveShopping();
   render();
+}
+
+// ── Data Export/Import ──
+async function exportData() {
+  const all = await dbGetAll();
+  const data = {
+    version: 1,
+    exported: new Date().toISOString(),
+    days: all,
+    achievements: loadUnlocked(),
+    shopping: loadShopping(),
+    cycleStart: START,
+    notificationsEnabled: state.notificationsEnabled
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "fittrack-backup-" + dateStr(effectiveNow()) + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function importData() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!data.days || !Array.isArray(data.days)) {
+        alert("קובץ לא תקין");
+        return;
+      }
+      if (!confirm(`לייבא ${data.days.length} ימים? הנתונים הקיימים יוחלפו.`)) return;
+      for (const day of data.days) await dbPut(day);
+      if (data.achievements) saveUnlocked(data.achievements);
+      if (data.shopping) { state.shopping = data.shopping; saveShopping(); }
+      if (data.cycleStart) { START = data.cycleStart; localStorage.setItem("fittrack_cycle_start", START); }
+      alert("הייבוא הושלם! " + data.days.length + " ימים יובאו.");
+      loadDay();
+    } catch (err) {
+      alert("שגיאה בייבוא: " + err.message);
+    }
+  };
+  input.click();
 }
 
 // ── UI helpers ──
