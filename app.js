@@ -15,7 +15,7 @@ const SCHEDULE = [
   { id: "workout", time: "20:00", label: "אימון", icon: "🏋️", cat: "workout", detail: "" },
   { id: "shake", time: "22:30", label: "שייק אחרי אימון", icon: "🥤", cat: "meal", detail: "סקופ חלבון + 2 תמרים / בננה\n(ביום מנוחה: חלבון בלבד)" },
   { id: "meal5", time: "23:15", label: "ארוחת לילה", icon: "🌙", cat: "meal", detail: "יוגורט חלבון 110 קל׳" },
-  { id: "sleep", time: "00:00", label: "שינה", icon: "😴", cat: "routine", detail: "לפחות 7 שעות רצופות" }
+  { id: "sleep", time: "01:00", label: "שינה", icon: "😴", cat: "routine", detail: "לפחות 7 שעות רצופות" }
 ];
 
 const CAT_COLORS = {
@@ -185,6 +185,14 @@ function isShoppingDay(ds) {
 }
 
 // ── Helpers ──
+// "Effective today" — before 5 AM counts as yesterday
+function effectiveNow() {
+  const now = new Date();
+  if (now.getHours() < 5) {
+    now.setDate(now.getDate() - 1);
+  }
+  return now;
+}
 function dateStr(d) { return d.toISOString().split("T")[0]; }
 function dayName(d) { return DAYS[d.getDay()]; }
 function cycleType(ds) {
@@ -261,7 +269,7 @@ function saveShopping() {
 
 // ── State ──
 let state = {
-  date: new Date(),
+  date: effectiveNow(),
   view: "today",
   dayData: null,
   weightHistory: [],
@@ -428,7 +436,7 @@ async function calculateStreak() {
   });
 
   let streak = 0;
-  const today = new Date();
+  const today = effectiveNow();
   const d = new Date(today);
 
   // Check if today is complete — if so, count it
@@ -506,7 +514,7 @@ function goToday() {
   _pendingScroll = null; // new day = scroll to top
   state.animateItems = true;
   state.slideDirection = null;
-  state.date = new Date();
+  state.date = effectiveNow();
   state.showDetail = null;
   state.editingNote = null;
   loadDay();
@@ -608,7 +616,7 @@ function render() {
   const total = SCHEDULE.length;
   const pct = total > 0 ? (completed / total) * 100 : 0;
   const isComplete = pct === 100;
-  const isToday = dateStr(state.date) === dateStr(new Date());
+  const isToday = dateStr(state.date) === dateStr(effectiveNow());
 
   // Header — rendered into permanent #header-root
   const bellIcon = state.notificationsEnabled ? "🔔" : "🔕";
@@ -1242,7 +1250,8 @@ function syncSteps() {
 // ── Now Marker ──
 function timeToMinutes(timeStr) {
   const [h, m] = timeStr.split(":").map(Number);
-  return h * 60 + m;
+  // Treat times before 05:00 as next day (e.g., 01:00 = 25*60) for timeline ordering
+  return (h < 5 ? h + 24 : h) * 60 + m;
 }
 
 function positionNowMarker() {
@@ -1577,8 +1586,8 @@ openDB().then(async () => {
         positionNowMarker();
       }
       // If date changed while away (e.g., opened next day), reload
-      const now = new Date();
-      if (dateStr(state.date) !== dateStr(now) && dateStr(state.date) === dateStr(new Date(Date.now() - 864e5))) {
+      const now = effectiveNow();
+      if (dateStr(state.date) !== dateStr(now)) {
         state.date = now;
         state.animateItems = true;
         loadDay();
@@ -1588,7 +1597,7 @@ openDB().then(async () => {
 
   // Update "now" marker every 60 seconds and steps every 30 seconds
   setInterval(() => {
-    if (state.view === "today" && dateStr(state.date) === dateStr(new Date())) {
+    if (state.view === "today" && dateStr(state.date) === dateStr(effectiveNow())) {
       positionNowMarker();
     }
   }, 60000);

@@ -210,7 +210,7 @@ const SCHEDULE = [
   { cron: "0 20", display: "20:00", label: "אימון", icon: "🏋️", tag: "workout" },
   { cron: "30 22", display: "22:30", label: "שייק אחרי אימון", icon: "🥤", tag: "shake" },
   { cron: "15 23", display: "23:15", label: "ארוחת לילה", icon: "🌙", tag: "meal5" },
-  { cron: "0 0", display: "00:00", label: "שינה", icon: "😴", tag: "sleep" }
+  { cron: "0 1", display: "01:00", label: "שינה", icon: "😴", tag: "sleep" }
 ];
 
 SCHEDULE.forEach(item => {
