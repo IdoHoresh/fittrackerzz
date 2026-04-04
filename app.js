@@ -33,88 +33,88 @@ const WORKOUT_DAYS = { 1: "upper", 2: "lowerA", 3: null, 4: "chestBack", 5: "low
 const WORKOUTS = {
   upper: { label: "UPPER", icon: "💪", groups: [
     { tag: "A", type: "superset", exercises: [
-      { id: "upper-back-row", label: "Upper Back Row", sub: "Row machine / Cable / Free weight", sets: 4, reps: "5-8", note: "Overhand grip, elbows 45-70° flared, scapular retraction" },
-      { id: "incline-bench", label: "Incline Bench Press", sub: "Smith machine / Dumbbells", sets: 4, reps: "5-8", note: "" }
+      { id: "upper-back-row", label: "Upper Back Row", sub: "Row machine / Cable / Free weight", sets: 4, reps: "5-8", info: "Overhand grip. Elbows ~45-70° flared/abducted. Emphasize scapular retraction.\n\nCan be machine or free weight.\n\nRest: ~3+ min between sets, or ~2 min if alternating with Incline Bench." },
+      { id: "incline-bench", label: "Incline Bench Press", sub: "Smith machine / Dumbbells", sets: 4, reps: "5-8", info: "Can use Smith machine or dumbbells.\n\nRest: ~3+ min between sets, or ~2 min if alternating with Upper Back Row." }
     ]},
     { tag: "B", type: "superset", exercises: [
-      { id: "lat-pulldown", label: "Lat Pulldowns", sub: "Neutral grip / Unilateral", sets: 3, reps: "8-12", note: "Neutral grip, lat bias, elbows close to sides" },
-      { id: "flat-press", label: "Flat Press", sub: "Machine / Dumbbells / Barbell", sets: 3, reps: "8-12", note: "" }
+      { id: "lat-pulldown", label: "Lat Pulldowns", sub: "Neutral grip / Unilateral", sets: 3, reps: "8-12", info: "Neutral grip, lat bias. Maintain a neutral spine.\n\nEmphasize shoulder extension, keeping elbows close to sides vs flared.\n\nYou may enjoy doing these unilaterally to get a better stretch, pulling slightly across body by shifting hips into the side you are training.\n\nRest: ~2 min if alternating with Flat Press." },
+      { id: "flat-press", label: "Flat Press", sub: "Machine / Dumbbells / Barbell", sets: 3, reps: "8-12", info: "Can be machine or free weight.\n\nRest: ~2 min if alternating with Lat Pulldowns." }
     ]},
     { tag: "C", type: "cluster", exercises: [
-      { id: "tricep-ext-overhead", label: "Tricep Extensions (overhead)", sub: "Cable low-to-high", sets: 1, reps: "12-15 + 3 clusters", note: "Rest 15-20s between clusters" }
+      { id: "tricep-ext-overhead", label: "Tricep Extensions (overhead)", sub: "Cable low-to-high", sets: 1, reps: "12-15 + 3 clusters", info: "Low to high / overhead cable extension.\n\n1 set of 12-15 reps to ~0-1 RIR, then 3 cluster sets to ~0-1 RIR.\n\nRest ~15-20 sec between clusters." }
     ]},
     { tag: "D", type: "cluster", exercises: [
-      { id: "cable-curls", label: "Standing Cable Curls", sub: "Elbows close to sides", sets: 1, reps: "12-15 + 3 clusters", note: "" }
+      { id: "cable-curls", label: "Standing Cable Curls", sub: "Elbows close to sides", sets: 1, reps: "12-15 + 3 clusters", info: "Keep elbows near sides throughout the movement.\n\n1 set of 12-15 reps to ~0-1 RIR, then 3 cluster sets to ~0-1 RIR.\n\nRest ~15-20 sec between clusters." }
     ]},
     { tag: "E", type: "cluster", exercises: [
-      { id: "lateral-raise", label: "Lateral Raise", sub: "Dumbbells / Cable", sets: 1, reps: "12-15 + 3 clusters", note: "Scapular plane" }
+      { id: "lateral-raise", label: "Lateral Raise", sub: "Dumbbells / Cable", sets: 1, reps: "12-15 + 3 clusters", info: "Perform in the scapular plane (slightly forward, not straight to the side).\n\n1 set of 12-15 reps to ~0-1 RIR, then 3 cluster sets to ~0-1 RIR.\n\nRest ~15-20 sec between clusters." }
     ]}
   ]},
   lowerA: { label: "LOWER A", icon: "🦵", groups: [
     { tag: "A", type: "single", exercises: [
-      { id: "bb-rdl", label: "BB RDLs", sub: "Barbell", sets: 3, reps: "6-10", note: "Rest 3-4 min" }
+      { id: "bb-rdl", label: "BB RDLs", sub: "Barbell", sets: 3, reps: "6-10", info: "Romanian Deadlifts with barbell.\n\nFocus on hip hinge, slight knee bend, feel the stretch in hamstrings.\n\nRest: ~3-4 min between sets." }
     ]},
     { tag: "B", type: "single", exercises: [
-      { id: "leg-press", label: "Leg Press", sub: "Machine, quad bias", sets: 3, reps: "6-10", note: "Rest 3-4 min" }
+      { id: "leg-press", label: "Leg Press", sub: "Machine, quad bias", sets: 3, reps: "6-10", info: "Quad bias — use a narrower, lower foot placement to emphasize quads.\n\nRest: ~3-4 min between sets." }
     ]},
     { tag: "C", type: "superset", exercises: [
-      { id: "lying-leg-curls", label: "Lying Leg Curls", sub: "Machine", sets: 3, reps: "12-15", note: "" },
-      { id: "split-squats", label: "Split Squats (rear foot elevated)", sub: "Smith machine / Dumbbells", sets: 2, reps: "8-10", note: "Glute bias" }
+      { id: "lying-leg-curls", label: "Lying Leg Curls", sub: "Machine", sets: 3, reps: "12-15", info: "Lying leg curl machine.\n\nRest: ~60-90 sec if alternating with Split Squats, or ~2-3 min if doing alone." },
+      { id: "split-squats", label: "Split Squats (rear foot elevated)", sub: "Smith machine / Dumbbells", sets: 2, reps: "8-10", info: "Bulgarian split squats with rear foot elevated. Glute bias.\n\nSmith machine works great for these, but DBs are fine too.\n\nRest: ~60-90 sec if alternating with Lying Leg Curls." }
     ]},
     { tag: "D", type: "single", exercises: [
-      { id: "standing-calf-a", label: "Standing Calf Raises", sub: "2s pause in stretch", sets: 4, reps: "8-12", note: "" }
+      { id: "standing-calf-a", label: "Standing Calf Raises", sub: "2s pause in stretch", sets: 4, reps: "8-12", info: "Pause 2 seconds in the stretched position (bottom) each rep.\n\nRest: ~2+ min between sets." }
     ]},
     { tag: "E", type: "single", exercises: [
-      { id: "reverse-crunches", label: "Reverse Crunches", sub: "Bodyweight", sets: 3, reps: "max", note: "" }
+      { id: "reverse-crunches", label: "Reverse Crunches", sub: "Bodyweight", sets: 3, reps: "max", info: "Bodyweight reverse crunches. Go to ~1-2 RIR each set." }
     ]}
   ]},
   chestBack: { label: "CHEST / BACK", icon: "🏋️", groups: [
     { tag: "A", type: "superset", exercises: [
-      { id: "flat-bench", label: "Flat Bench Press", sub: "Barbell / Smith machine", sets: 3, reps: "5-8", note: "" },
-      { id: "rows-lat", label: "Rows (lat bias)", sub: "DB Row / Seated Cable Row / HS Low Row", sets: 3, reps: "5-8", note: "Elbows close, neutral ribcage" }
+      { id: "flat-bench", label: "Flat Bench Press", sub: "Barbell / Smith machine", sets: 3, reps: "5-8", info: "Flat barbell or Smith machine bench press.\n\nRest: ~3+ min between sets, or ~2 min if alternating with Rows." },
+      { id: "rows-lat", label: "Rows (lat bias)", sub: "DB Row / Seated Cable Row / HS Low Row", sets: 3, reps: "5-8", info: "Lat-biased rows. Ex: Kneeling DB Rows, Seated Cable Rows, HS Low Rows.\n\nMaintain a neutral ribcage. Emphasize shoulder extension, keeping elbows close to sides vs flared.\n\nTry to avoid going beyond ~90° shoulder flexion.\n\nYou may enjoy doing these unilaterally for a better stretch.\n\nRest: ~2 min if alternating with Flat Bench." }
     ]},
     { tag: "B", type: "superset", exercises: [
-      { id: "incline-press-b", label: "Incline Press", sub: "Machine / Dumbbells", sets: 3, reps: "8-12", note: "" },
-      { id: "wide-pulldown", label: "Wide Grip Pulldown", sub: "Overhand grip / Pull-ups", sets: 3, reps: "8-12", note: "Upper back bias, scapular retraction" }
+      { id: "incline-press-b", label: "Incline Press", sub: "Machine / Dumbbells", sets: 3, reps: "8-12", info: "Can be machine or free weight.\n\nRest: ~2 min if alternating with Wide Grip Pulldown." },
+      { id: "wide-pulldown", label: "Wide Grip Pulldown", sub: "Overhand grip / Pull-ups", sets: 3, reps: "8-12", info: "Wide grip / frontal plane pulldown or pull-up. Overhand grip, upper back bias.\n\nEmphasize scapular retraction.\n\nRest: ~2 min if alternating with Incline Press." }
     ]},
     { tag: "C", type: "single", exercises: [
-      { id: "cable-flys", label: "High to Low Cable Flys", sub: "Cables", sets: 2, reps: "12-15", note: "" }
+      { id: "cable-flys", label: "High to Low Cable Flys", sub: "Cables", sets: 2, reps: "12-15", info: "High to low cable fly movement.\n\nRest: ~2+ min between sets." }
     ]},
     { tag: "D", type: "single", exercises: [
-      { id: "lat-prayers", label: "Cable Lat Prayers / Pullovers", sub: "Cable", sets: 2, reps: "12-15", note: "Don't exceed 120° shoulder flexion" }
+      { id: "lat-prayers", label: "Cable Lat Prayers / Pullovers", sub: "Cable", sets: 2, reps: "12-15", info: "Cable lat prayers or pullovers.\n\nTry not to exceed ~120 degrees shoulder flexion.\n\nRest: ~2+ min between sets." }
     ]}
   ]},
   lowerB: { label: "LOWER B", icon: "🦵", groups: [
     { tag: "A", type: "single", exercises: [
-      { id: "back-squats", label: "Back Squats", sub: "Barbell", sets: 3, reps: "5-8", note: "Rest 3-4 min" }
+      { id: "back-squats", label: "Back Squats", sub: "Barbell", sets: 3, reps: "5-8", info: "Barbell back squats.\n\nRest: ~3-4 min between sets." }
     ]},
     { tag: "B", type: "superset", exercises: [
-      { id: "seated-leg-curls", label: "Seated Leg Curls", sub: "Machine", sets: 4, reps: "8-12", note: "" },
-      { id: "leg-extensions", label: "Leg Extensions", sub: "Machine", sets: 3, reps: "12-15", note: "" }
+      { id: "seated-leg-curls", label: "Seated Leg Curls", sub: "Machine", sets: 4, reps: "8-12", info: "Seated leg curl machine.\n\nRest: ~60 sec if alternating with Leg Extensions, or ~2+ min if doing alone." },
+      { id: "leg-extensions", label: "Leg Extensions", sub: "Machine", sets: 3, reps: "12-15", info: "Leg extension machine.\n\nRest: ~60 sec if alternating with Seated Leg Curls." }
     ]},
     { tag: "C", type: "single", exercises: [
-      { id: "standing-calf-b", label: "Standing Calf Raises", sub: "2s pause in stretch", sets: 4, reps: "12-15", note: "" }
+      { id: "standing-calf-b", label: "Standing Calf Raises", sub: "2s pause in stretch", sets: 4, reps: "12-15", info: "Pause 2 seconds in the stretched position (bottom) each rep.\n\nRest: ~2+ min between sets." }
     ]},
     { tag: "D", type: "single", exercises: [
-      { id: "rope-crunches", label: "Rope Crunches", sub: "Cable", sets: 3, reps: "8-12", note: "" }
+      { id: "rope-crunches", label: "Rope Crunches", sub: "Cable", sets: 3, reps: "8-12", info: "Cable rope crunches.\n\nRest: ~2+ min between sets." }
     ]}
   ]},
   shouldersArms: { label: "SHOULDERS / ARMS", icon: "💪", groups: [
     { tag: "A", type: "single", exercises: [
-      { id: "delt-press", label: "Anterior Delt Press", sub: "Dumbbells / Machine", sets: 3, reps: "6-10", note: "Rest 3+ min" }
+      { id: "delt-press", label: "Anterior Delt Press", sub: "Dumbbells / Machine", sets: 3, reps: "6-10", info: "Anterior delt press. Can be free weight or machine.\n\nRest: ~3+ min between sets." }
     ]},
     { tag: "B", type: "superset", exercises: [
-      { id: "bayesian-curls", label: "Bayesian Cable Curls", sub: "Cable, shoulder 20-30° extension", sets: 3, reps: "12-15", note: "" },
-      { id: "rope-tricep-ext", label: "Rope Tricep Extensions", sub: "Cable high-to-low", sets: 3, reps: "12-15", note: "" }
+      { id: "bayesian-curls", label: "Bayesian Cable Curls", sub: "Cable, shoulder 20-30° extension", sets: 3, reps: "12-15", info: "Face away / Bayesian cable curls.\n\nShoulder should be in ~20-30° extension to get a better stretch on the long head of the bicep.\n\nRest: ~60-90 sec if alternating with Rope Tricep Extensions." },
+      { id: "rope-tricep-ext", label: "Rope Tricep Extensions", sub: "Cable high-to-low", sets: 3, reps: "12-15", info: "Rope tricep extensions, cable from high to low.\n\nRest: ~60-90 sec if alternating with Bayesian Curls." }
     ]},
     { tag: "C", type: "single", exercises: [
-      { id: "cable-lateral", label: "Cable Lateral Raises", sub: "Cable", sets: 4, reps: "12-15", note: "" }
+      { id: "cable-lateral", label: "Cable Lateral Raises", sub: "Cable", sets: 4, reps: "12-15", info: "Cable lateral raises.\n\nRest: ~2 min between sets." }
     ]},
     { tag: "D", type: "cluster", exercises: [
-      { id: "hammer-curls", label: "Hammer Curls", sub: "Dumbbells / Cable", sets: 1, reps: "12-15 + 3 clusters", note: "Rest 15-20s between clusters" }
+      { id: "hammer-curls", label: "Hammer Curls", sub: "Dumbbells / Cable", sets: 1, reps: "12-15 + 3 clusters", info: "Hammer curls with dumbbells or cable.\n\n1 set of 12-15 reps to ~0-1 RIR, then 3 cluster sets to ~0-1 RIR.\n\nRest ~15-20 sec between clusters." }
     ]},
     { tag: "E", type: "cluster", exercises: [
-      { id: "tricep-ext-oh-b", label: "Tricep Extensions (overhead)", sub: "Cable low-to-high", sets: 1, reps: "12-15 + 3 clusters", note: "" }
+      { id: "tricep-ext-oh-b", label: "Tricep Extensions (overhead)", sub: "Cable low-to-high", sets: 1, reps: "12-15 + 3 clusters", info: "Overhead tricep extension, cable from low to high.\n\n1 set of 12-15 reps to ~0-1 RIR, then 3 cluster sets to ~0-1 RIR.\n\nRest ~15-20 sec between clusters." }
     ]}
   ]}
 };
@@ -863,7 +863,7 @@ function render() {
 
           html += `<div class="wo-exercise">
             <div class="wo-ex-header">
-              <div class="wo-ex-name">${ex.label}</div>
+              <div class="wo-ex-name">${ex.label} ${ex.info ? `<button class="wo-info-btn" onclick="event.stopPropagation();showExInfo('${ex.id}')">ⓘ</button>` : ""}</div>
               <div class="wo-ex-target">${ex.sets} × ${ex.reps}</div>
             </div>
             <div class="wo-ex-sub">${ex.sub}</div>
@@ -1239,6 +1239,37 @@ function positionNowMarker() {
   if (label) {
     label.textContent = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
   }
+}
+
+// ── Exercise Info Popup ──
+function showExInfo(exId) {
+  // Find the exercise across all workouts
+  let ex = null;
+  for (const wk of Object.values(WORKOUTS)) {
+    for (const g of wk.groups) {
+      for (const e of g.exercises) {
+        if (e.id === exId) { ex = e; break; }
+      }
+      if (ex) break;
+    }
+    if (ex) break;
+  }
+  if (!ex || !ex.info) return;
+
+  // Create overlay popup
+  const overlay = document.createElement("div");
+  overlay.className = "wo-info-overlay";
+  overlay.onclick = () => overlay.remove();
+  overlay.innerHTML = `<div class="wo-info-popup" onclick="event.stopPropagation()">
+    <div class="wo-info-popup-header">
+      <div class="wo-info-popup-title">${ex.label}</div>
+      <button class="wo-info-close" onclick="this.closest('.wo-info-overlay').remove()">✕</button>
+    </div>
+    <div class="wo-info-popup-sub">${ex.sub}</div>
+    <div class="wo-info-popup-target">${ex.sets} × ${ex.reps}</div>
+    <div class="wo-info-popup-body">${ex.info.replace(/\n/g, "<br>")}</div>
+  </div>`;
+  document.body.appendChild(overlay);
 }
 
 // ── Workout Chart ──
