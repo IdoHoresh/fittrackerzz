@@ -191,10 +191,9 @@ function cycleType(ds) {
   const diff = Math.floor((new Date(ds) - new Date(START)) / 864e5);
   return CYCLE[((diff % 6) + 6) % 6];
 }
+const AEROBIC_DAYS = ["upper", "chestBack", "shouldersArms"];
 function hasAerobic(ds) {
-  const ct = cycleType(ds);
-  // Aerobic on workout days (not rest)
-  return ct !== "rest";
+  return AEROBIC_DAYS.includes(cycleType(ds));
 }
 
 // ── IndexedDB ──
