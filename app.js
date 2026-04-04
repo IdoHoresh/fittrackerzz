@@ -122,43 +122,43 @@ const WORKOUTS = {
 // ── Achievements ──
 const ACHIEVEMENTS = [
   // Consistency
-  { id: "streak-7", cat: "consistency", icon: "🔥", title: "Week Warrior", desc: "7 day streak", target: 7, progress: d => d.streak, check: d => d.streak >= 7 },
-  { id: "streak-14", cat: "consistency", icon: "🔥", title: "Two Week Beast", desc: "14 day streak", target: 14, progress: d => d.streak, check: d => d.streak >= 14 },
-  { id: "streak-30", cat: "consistency", icon: "🔥", title: "Monthly Machine", desc: "30 day streak", target: 30, progress: d => d.streak, check: d => d.streak >= 30 },
-  { id: "streak-60", cat: "consistency", icon: "🔥", title: "Iron Will", desc: "60 day streak", target: 60, progress: d => d.streak, check: d => d.streak >= 60 },
-  { id: "streak-100", cat: "consistency", icon: "🔥", title: "Unstoppable", desc: "100 day streak", target: 100, progress: d => d.streak, check: d => d.streak >= 100 },
-  // Strength
-  { id: "first-workout", cat: "strength", icon: "💪", title: "Day One", desc: "Log your first workout", target: 1, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 1 },
-  { id: "first-pr", cat: "strength", icon: "🏆", title: "First Blood", desc: "Hit your first PR", target: 1, progress: d => d.totalPRs, check: d => d.totalPRs >= 1 },
-  { id: "pr-5", cat: "strength", icon: "🏆", title: "PR Hunter", desc: "Hit 5 PRs", target: 5, progress: d => d.totalPRs, check: d => d.totalPRs >= 5 },
-  { id: "pr-10", cat: "strength", icon: "🏆", title: "PR Machine", desc: "Hit 10 PRs", target: 10, progress: d => d.totalPRs, check: d => d.totalPRs >= 10 },
-  { id: "pr-25", cat: "strength", icon: "🏆", title: "PR Legend", desc: "Hit 25 PRs", target: 25, progress: d => d.totalPRs, check: d => d.totalPRs >= 25 },
-  // Steps
-  { id: "steps-5k", cat: "steps", icon: "👟", title: "Getting Moving", desc: "5,000 steps in a day", target: 5000, progress: d => d.todaySteps, check: d => d.todaySteps >= 5000 },
-  { id: "steps-10k", cat: "steps", icon: "👟", title: "Step Master", desc: "10,000 steps in a day", target: 10000, progress: d => d.todaySteps, check: d => d.todaySteps >= 10000 },
-  { id: "steps-15k", cat: "steps", icon: "👟", title: "Road Runner", desc: "15,000 steps in a day", target: 15000, progress: d => d.todaySteps, check: d => d.todaySteps >= 15000 },
-  // Weight
-  { id: "weight-first", cat: "weight", icon: "⚖️", title: "Scale Check", desc: "Log your first weight", target: 1, progress: d => d.weightDays, check: d => d.weightDays >= 1 },
-  { id: "weight-30", cat: "weight", icon: "⚖️", title: "Consistent Tracker", desc: "Log weight 30 days", target: 30, progress: d => d.weightDays, check: d => d.weightDays >= 30 },
-  // Nutrition
-  { id: "meals-perfect", cat: "nutrition", icon: "🥗", title: "Perfect Day", desc: "Complete all 10 tasks", target: 1, progress: d => d.perfectDays, check: d => d.perfectDays >= 1 },
-  { id: "meals-week", cat: "nutrition", icon: "🥗", title: "Full Week", desc: "7 perfect days", target: 7, progress: d => d.perfectDays, check: d => d.perfectDays >= 7 },
-  { id: "meals-50", cat: "nutrition", icon: "🥗", title: "Halfway Hero", desc: "50 perfect days", target: 50, progress: d => d.perfectDays, check: d => d.perfectDays >= 50 },
-  { id: "meals-100", cat: "nutrition", icon: "🥗", title: "Century Club", desc: "100 perfect days", target: 100, progress: d => d.perfectDays, check: d => d.perfectDays >= 100 },
-  // Milestones
-  { id: "workouts-10", cat: "milestones", icon: "🎯", title: "Getting Started", desc: "10 workouts logged", target: 10, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 10 },
-  { id: "workouts-50", cat: "milestones", icon: "🎯", title: "Gym Rat", desc: "50 workouts logged", target: 50, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 50 },
-  { id: "workouts-100", cat: "milestones", icon: "🎯", title: "Iron Veteran", desc: "100 workouts logged", target: 100, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 100 },
-  { id: "app-30", cat: "milestones", icon: "📅", title: "One Month In", desc: "Use the app for 30 days", target: 30, progress: d => d.totalDays, check: d => d.totalDays >= 30 }
+  { id: "streak-7", cat: "consistency", icon: "🔥", title: "לוחם שבועי", desc: "רצף של 7 ימים", target: 7, progress: d => d.streak, check: d => d.streak >= 7 },
+  { id: "streak-14", cat: "consistency", icon: "🔥", title: "חיה של שבועיים", desc: "רצף של 14 ימים", target: 14, progress: d => d.streak, check: d => d.streak >= 14 },
+  { id: "streak-30", cat: "consistency", icon: "🔥", title: "מכונה חודשית", desc: "רצף של 30 ימים", target: 30, progress: d => d.streak, check: d => d.streak >= 30 },
+  { id: "streak-60", cat: "consistency", icon: "🔥", title: "רצון ברזל", desc: "רצף של 60 ימים", target: 60, progress: d => d.streak, check: d => d.streak >= 60 },
+  { id: "streak-100", cat: "consistency", icon: "🔥", title: "בלתי ניתן לעצירה", desc: "רצף של 100 ימים", target: 100, progress: d => d.streak, check: d => d.streak >= 100 },
+  // כוח
+  { id: "first-workout", cat: "strength", icon: "💪", title: "יום ראשון", desc: "תעד את האימון הראשון", target: 1, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 1 },
+  { id: "first-pr", cat: "strength", icon: "🏆", title: "דם ראשון", desc: "שבור שיא אישי ראשון", target: 1, progress: d => d.totalPRs, check: d => d.totalPRs >= 1 },
+  { id: "pr-5", cat: "strength", icon: "🏆", title: "צייד שיאים", desc: "5 שיאים אישיים", target: 5, progress: d => d.totalPRs, check: d => d.totalPRs >= 5 },
+  { id: "pr-10", cat: "strength", icon: "🏆", title: "מכונת שיאים", desc: "10 שיאים אישיים", target: 10, progress: d => d.totalPRs, check: d => d.totalPRs >= 10 },
+  { id: "pr-25", cat: "strength", icon: "🏆", title: "אגדת שיאים", desc: "25 שיאים אישיים", target: 25, progress: d => d.totalPRs, check: d => d.totalPRs >= 25 },
+  // צעדים
+  { id: "steps-5k", cat: "steps", icon: "👟", title: "מתחילים לזוז", desc: "5,000 צעדים ביום", target: 5000, progress: d => d.todaySteps, check: d => d.todaySteps >= 5000 },
+  { id: "steps-10k", cat: "steps", icon: "👟", title: "אלוף הצעדים", desc: "10,000 צעדים ביום", target: 10000, progress: d => d.todaySteps, check: d => d.todaySteps >= 10000 },
+  { id: "steps-15k", cat: "steps", icon: "👟", title: "רץ הכביש", desc: "15,000 צעדים ביום", target: 15000, progress: d => d.todaySteps, check: d => d.todaySteps >= 15000 },
+  // משקל
+  { id: "weight-first", cat: "weight", icon: "⚖️", title: "בדיקת משקל", desc: "תעד משקל ראשון", target: 1, progress: d => d.weightDays, check: d => d.weightDays >= 1 },
+  { id: "weight-30", cat: "weight", icon: "⚖️", title: "עוקב עקבי", desc: "תעד משקל 30 ימים", target: 30, progress: d => d.weightDays, check: d => d.weightDays >= 30 },
+  // תזונה
+  { id: "meals-perfect", cat: "nutrition", icon: "🥗", title: "יום מושלם", desc: "השלם את כל 10 המשימות", target: 1, progress: d => d.perfectDays, check: d => d.perfectDays >= 1 },
+  { id: "meals-week", cat: "nutrition", icon: "🥗", title: "שבוע מלא", desc: "7 ימים מושלמים", target: 7, progress: d => d.perfectDays, check: d => d.perfectDays >= 7 },
+  { id: "meals-50", cat: "nutrition", icon: "🥗", title: "גיבור חצי הדרך", desc: "50 ימים מושלמים", target: 50, progress: d => d.perfectDays, check: d => d.perfectDays >= 50 },
+  { id: "meals-100", cat: "nutrition", icon: "🥗", title: "מועדון המאה", desc: "100 ימים מושלמים", target: 100, progress: d => d.perfectDays, check: d => d.perfectDays >= 100 },
+  // אבני דרך
+  { id: "workouts-10", cat: "milestones", icon: "🎯", title: "רק מתחילים", desc: "10 אימונים", target: 10, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 10 },
+  { id: "workouts-50", cat: "milestones", icon: "🎯", title: "חולה חדר כושר", desc: "50 אימונים", target: 50, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 50 },
+  { id: "workouts-100", cat: "milestones", icon: "🎯", title: "ותיק הברזל", desc: "100 אימונים", target: 100, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 100 },
+  { id: "app-30", cat: "milestones", icon: "📅", title: "חודש ראשון", desc: "שימוש באפליקציה 30 ימים", target: 30, progress: d => d.totalDays, check: d => d.totalDays >= 30 }
 ];
 
 const ACH_CATS = [
-  { id: "consistency", label: "Consistency", icon: "🔥" },
-  { id: "strength", label: "Strength", icon: "💪" },
-  { id: "steps", label: "Steps", icon: "👟" },
-  { id: "weight", label: "Weight", icon: "⚖️" },
-  { id: "nutrition", label: "Nutrition", icon: "🥗" },
-  { id: "milestones", label: "Milestones", icon: "🎯" }
+  { id: "consistency", label: "עקביות", icon: "🔥" },
+  { id: "strength", label: "כוח", icon: "💪" },
+  { id: "steps", label: "צעדים", icon: "👟" },
+  { id: "weight", label: "משקל", icon: "⚖️" },
+  { id: "nutrition", label: "תזונה", icon: "🥗" },
+  { id: "milestones", label: "אבני דרך", icon: "🎯" }
 ];
 
 function getWorkoutType(ds) {
@@ -837,7 +837,7 @@ function render() {
       <div class="ach-summary" onclick="state.showAchievements=!state.showAchievements;render()">
         <div class="ach-summary-left">
           <span class="ach-summary-icon">🏆</span>
-          <span class="ach-summary-text">${unlockedCount}/${totalAch} Achievements</span>
+          <span class="ach-summary-text">${unlockedCount}/${totalAch} הישגים</span>
         </div>
         <span class="ach-summary-arrow">${state.showAchievements ? "▲" : "▼"}</span>
       </div>
@@ -858,7 +858,7 @@ function render() {
               <div class="ach-card-title">${ach.title}</div>
               <div class="ach-card-desc">${ach.desc}</div>
               ${!isUnlocked ? `<div class="ach-card-bar"><div class="ach-card-fill" style="width:${pct}%"></div></div>
-              <div class="ach-card-prog">${prog}/${ach.target}</div>` : `<div class="ach-card-date">Unlocked ${unlocked[ach.id]}</div>`}
+              <div class="ach-card-prog">${prog}/${ach.target}</div>` : `<div class="ach-card-date">הושג ${unlocked[ach.id]}</div>`}
             </div>
           </div>`;
         });
@@ -1471,7 +1471,7 @@ function showAchievementToast(ach) {
   toast.innerHTML = `<div class="ach-toast-inner">
     <span class="ach-toast-icon">${ach.icon}</span>
     <div>
-      <div class="ach-toast-title">Achievement Unlocked!</div>
+      <div class="ach-toast-title">הישג חדש!</div>
       <div class="ach-toast-name">${ach.title}</div>
     </div>
   </div>`;
