@@ -26,6 +26,104 @@ const CAT_COLORS = {
 
 const DAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 
+// ── Workouts ──
+// Weekly cycle: Mon=upper, Tue=lowerA, Wed=rest, Thu=chestBack, Fri=lowerB, Sat=shouldersArms, Sun=rest
+const WORKOUT_DAYS = { 1: "upper", 2: "lowerA", 3: null, 4: "chestBack", 5: "lowerB", 6: "shouldersArms", 0: null };
+
+const WORKOUTS = {
+  upper: { label: "UPPER", icon: "💪", groups: [
+    { tag: "A", type: "superset", exercises: [
+      { id: "upper-back-row", label: "Upper Back Row", sub: "מכונת חתירה / כבל / משקל חופשי", sets: 4, reps: "5-8", note: "Overhand grip, elbows 45-70° flared, scapular retraction" },
+      { id: "incline-bench", label: "Incline Bench Press", sub: "סמית׳ / דמבלים", sets: 4, reps: "5-8", note: "" }
+    ]},
+    { tag: "B", type: "superset", exercises: [
+      { id: "lat-pulldown", label: "Lat Pulldowns", sub: "ניוטרל גריפ / חד-צדדי", sets: 3, reps: "8-12", note: "Neutral grip, lat bias, elbows close to sides" },
+      { id: "flat-press", label: "Flat Press", sub: "מכונה / דמבלים / ברבל", sets: 3, reps: "8-12", note: "" }
+    ]},
+    { tag: "C", type: "cluster", exercises: [
+      { id: "tricep-ext-overhead", label: "Tricep Extensions (overhead)", sub: "כבל נמוך לגבוה", sets: 1, reps: "12-15 + 3 clusters", note: "Rest 15-20s between clusters" }
+    ]},
+    { tag: "D", type: "cluster", exercises: [
+      { id: "cable-curls", label: "Standing Cable Curls", sub: "מרפקים צמודים לגוף", sets: 1, reps: "12-15 + 3 clusters", note: "" }
+    ]},
+    { tag: "E", type: "cluster", exercises: [
+      { id: "lateral-raise", label: "Lateral Raise", sub: "דמבלים / כבל", sets: 1, reps: "12-15 + 3 clusters", note: "Scapular plane" }
+    ]}
+  ]},
+  lowerA: { label: "LOWER A", icon: "🦵", groups: [
+    { tag: "A", type: "single", exercises: [
+      { id: "bb-rdl", label: "BB RDLs", sub: "ברבל", sets: 3, reps: "6-10", note: "Rest 3-4 min" }
+    ]},
+    { tag: "B", type: "single", exercises: [
+      { id: "leg-press", label: "Leg Press", sub: "מכונה, דגש על קוואדס", sets: 3, reps: "6-10", note: "Rest 3-4 min" }
+    ]},
+    { tag: "C", type: "superset", exercises: [
+      { id: "lying-leg-curls", label: "Lying Leg Curls", sub: "מכונה", sets: 3, reps: "12-15", note: "" },
+      { id: "split-squats", label: "Split Squats (rear foot elevated)", sub: "סמית׳ / דמבלים", sets: 2, reps: "8-10", note: "Glute bias" }
+    ]},
+    { tag: "D", type: "single", exercises: [
+      { id: "standing-calf-a", label: "Standing Calf Raises", sub: "השהייה 2 שניות במתיחה", sets: 4, reps: "8-12", note: "" }
+    ]},
+    { tag: "E", type: "single", exercises: [
+      { id: "reverse-crunches", label: "Reverse Crunches", sub: "משקל גוף", sets: 3, reps: "max", note: "" }
+    ]}
+  ]},
+  chestBack: { label: "CHEST / BACK", icon: "🏋️", groups: [
+    { tag: "A", type: "superset", exercises: [
+      { id: "flat-bench", label: "Flat Bench Press", sub: "ברבל / סמית׳", sets: 3, reps: "5-8", note: "" },
+      { id: "rows-lat", label: "Rows (lat bias)", sub: "חתירת דמבל / כבל ישיבה / HS Low Row", sets: 3, reps: "5-8", note: "Elbows close, neutral ribcage" }
+    ]},
+    { tag: "B", type: "superset", exercises: [
+      { id: "incline-press-b", label: "Incline Press", sub: "מכונה / דמבלים", sets: 3, reps: "8-12", note: "" },
+      { id: "wide-pulldown", label: "Wide Grip Pulldown", sub: "Overhand grip / Pull-ups", sets: 3, reps: "8-12", note: "Upper back bias, scapular retraction" }
+    ]},
+    { tag: "C", type: "single", exercises: [
+      { id: "cable-flys", label: "High to Low Cable Flys", sub: "כבלים", sets: 2, reps: "12-15", note: "" }
+    ]},
+    { tag: "D", type: "single", exercises: [
+      { id: "lat-prayers", label: "Cable Lat Prayers / Pullovers", sub: "כבל", sets: 2, reps: "12-15", note: "Don't exceed 120° shoulder flexion" }
+    ]}
+  ]},
+  lowerB: { label: "LOWER B", icon: "🦵", groups: [
+    { tag: "A", type: "single", exercises: [
+      { id: "back-squats", label: "Back Squats", sub: "ברבל", sets: 3, reps: "5-8", note: "Rest 3-4 min" }
+    ]},
+    { tag: "B", type: "superset", exercises: [
+      { id: "seated-leg-curls", label: "Seated Leg Curls", sub: "מכונה", sets: 4, reps: "8-12", note: "" },
+      { id: "leg-extensions", label: "Leg Extensions", sub: "מכונה", sets: 3, reps: "12-15", note: "" }
+    ]},
+    { tag: "C", type: "single", exercises: [
+      { id: "standing-calf-b", label: "Standing Calf Raises", sub: "השהייה 2 שניות במתיחה", sets: 4, reps: "12-15", note: "" }
+    ]},
+    { tag: "D", type: "single", exercises: [
+      { id: "rope-crunches", label: "Rope Crunches", sub: "כבל", sets: 3, reps: "8-12", note: "" }
+    ]}
+  ]},
+  shouldersArms: { label: "SHOULDERS / ARMS", icon: "💪", groups: [
+    { tag: "A", type: "single", exercises: [
+      { id: "delt-press", label: "Anterior Delt Press", sub: "דמבלים / מכונה", sets: 3, reps: "6-10", note: "Rest 3+ min" }
+    ]},
+    { tag: "B", type: "superset", exercises: [
+      { id: "bayesian-curls", label: "Bayesian Cable Curls", sub: "כבל, כתף 20-30° אקסטנשן", sets: 3, reps: "12-15", note: "" },
+      { id: "rope-tricep-ext", label: "Rope Tricep Extensions", sub: "כבל גבוה לנמוך", sets: 3, reps: "12-15", note: "" }
+    ]},
+    { tag: "C", type: "single", exercises: [
+      { id: "cable-lateral", label: "Cable Lateral Raises", sub: "כבל", sets: 4, reps: "12-15", note: "" }
+    ]},
+    { tag: "D", type: "cluster", exercises: [
+      { id: "hammer-curls", label: "Hammer Curls", sub: "דמבלים / כבל", sets: 1, reps: "12-15 + 3 clusters", note: "Rest 15-20s between clusters" }
+    ]},
+    { tag: "E", type: "cluster", exercises: [
+      { id: "tricep-ext-oh-b", label: "Tricep Extensions (overhead)", sub: "כבל נמוך לגבוה", sets: 1, reps: "12-15 + 3 clusters", note: "" }
+    ]}
+  ]}
+};
+
+function getWorkoutType(ds) {
+  const dow = new Date(ds).getDay();
+  return WORKOUT_DAYS[dow] || null;
+}
+
 // ── Shopping List ──
 const SHOP_CATEGORIES = [
   { id: "produce", label: "ירקות ופירות", icon: "🥬", color: "#4caf50" },
@@ -523,6 +621,7 @@ function render() {
     <div class="tabs">
       <button class="tab ${state.view === "today" ? "active" : ""}" onclick="setState('view','today')">📋 יומי</button>
       <button class="tab ${state.view === "weight" ? "active" : ""}" onclick="setState('view','weight');loadWeights().then(render)">⚖️ משקל</button>
+      <button class="tab ${state.view === "workout" ? "active" : ""}" onclick="setState('view','workout');loadWorkoutHistory().then(render)">🏋️ אימון</button>
       <button class="tab ${state.view === "shopping" ? "active" : ""}" onclick="setState('view','shopping')">🛒 קניות</button>
     </div>
   </div>`;
@@ -720,6 +819,77 @@ function render() {
       html += `</div>`;
     }
     html += `</div>`;
+  } else if (state.view === "workout") {
+    // Workout view
+    const wType = getWorkoutType(ds);
+    html += `<div class="workout-view">`;
+
+    if (!wType) {
+      html += `<div class="wo-rest"><div class="wo-rest-icon">😴</div><div class="wo-rest-title">יום מנוחה</div><div class="wo-rest-sub">אין אימון היום</div></div>`;
+    } else {
+      const wo = WORKOUTS[wType];
+      html += `<h2 class="wo-title">${wo.icon} ${wo.label}</h2>`;
+
+      const log = d.workoutLog || {};
+
+      wo.groups.forEach((group, gIdx) => {
+        const groupLabel = group.type === "superset" ? `${group.tag} (סופרסט)` : group.type === "cluster" ? `${group.tag} (קלאסטר)` : group.tag;
+        html += `<div class="wo-group stagger-in" style="animation-delay:${gIdx * 0.06}s">`;
+        html += `<div class="wo-group-header">${groupLabel}</div>`;
+
+        group.exercises.forEach(ex => {
+          const sets = log[ex.id] || [];
+          const last = getLastSession(ex.id);
+          const lastStr = last ? last.map(s => s.weight + "×" + s.reps).join(", ") : "—";
+          const targetSets = ex.sets;
+
+          // Ensure we show at least the target number of set rows
+          const displaySets = [];
+          for (let i = 0; i < Math.max(targetSets, sets.length); i++) {
+            displaySets.push(sets[i] || { weight: "", reps: "" });
+          }
+
+          html += `<div class="wo-exercise">
+            <div class="wo-ex-header">
+              <div class="wo-ex-name">${ex.label}</div>
+              <div class="wo-ex-target">${ex.sets} × ${ex.reps}</div>
+            </div>
+            <div class="wo-ex-sub">${ex.sub}</div>
+            <div class="wo-ex-last">אחרון: ${lastStr}</div>`;
+
+          displaySets.forEach((s, sIdx) => {
+            html += `<div class="wo-set-row">
+              <span class="wo-set-num">${sIdx + 1}</span>
+              <input type="number" class="wo-input" placeholder="ק״ג" value="${s.weight}" oninput="saveWorkoutSet('${ex.id}',${sIdx},'weight',this.value)">
+              <span class="wo-x">×</span>
+              <input type="number" class="wo-input" placeholder="חזרות" value="${s.reps}" oninput="saveWorkoutSet('${ex.id}',${sIdx},'reps',this.value)">
+            </div>`;
+          });
+
+          html += `<div class="wo-set-actions">
+              <button class="wo-add-set" onclick="addWorkoutSet('${ex.id}')">+ סט</button>
+              ${sets.length > targetSets ? `<button class="wo-rm-set" onclick="removeWorkoutSet('${ex.id}')">− סט</button>` : ""}
+            </div>`;
+          html += `</div>`;
+        });
+
+        html += `</div>`;
+      });
+
+      // Progression chart section
+      const allExercises = wo.groups.flatMap(g => g.exercises);
+      const selEx = state.woChartEx || allExercises[0].id;
+      html += `<div class="wo-progression stagger-in" style="animation-delay:0.4s">
+        <h3 class="wo-prog-title">📈 התקדמות</h3>
+        <select class="wo-prog-select" onchange="state.woChartEx=this.value;renderWorkoutChart()">
+          ${allExercises.map(ex => `<option value="${ex.id}" ${selEx === ex.id ? "selected" : ""}>${ex.label}</option>`).join("")}
+        </select>
+        <div class="wo-chart-box" id="wo-chart"></div>
+      </div>`;
+    }
+
+    html += `</div>`;
+
   } else if (state.view === "shopping") {
     // Shopping list view
     const sh = state.shopping;
@@ -844,6 +1014,11 @@ function render() {
     if (inp) inp.focus();
   }
 
+  // Render workout progression chart
+  if (state.view === "workout") {
+    renderWorkoutChart();
+  }
+
   // Position "now" marker after DOM settles
   if (isToday && state.view === "today") {
     requestAnimationFrame(() => positionNowMarker());
@@ -876,6 +1051,59 @@ function cycleWorkoutType() {
   state.dayData.workoutType = next;
   state.dayData.hasAerobic = hasAerobic(ds);
   saveDay();
+}
+
+// ── Workout Actions ──
+function saveWorkoutSet(exId, setIdx, field, value) {
+  if (!state.dayData.workoutLog) state.dayData.workoutLog = {};
+  if (!state.dayData.workoutLog[exId]) state.dayData.workoutLog[exId] = [];
+  const sets = state.dayData.workoutLog[exId];
+  while (sets.length <= setIdx) sets.push({ weight: "", reps: "" });
+  sets[setIdx][field] = value;
+  dbPut(state.dayData);
+}
+
+function addWorkoutSet(exId) {
+  if (!state.dayData.workoutLog) state.dayData.workoutLog = {};
+  if (!state.dayData.workoutLog[exId]) state.dayData.workoutLog[exId] = [];
+  state.dayData.workoutLog[exId].push({ weight: "", reps: "" });
+  dbPut(state.dayData);
+  render();
+}
+
+function removeWorkoutSet(exId) {
+  if (!state.dayData.workoutLog || !state.dayData.workoutLog[exId]) return;
+  state.dayData.workoutLog[exId].pop();
+  dbPut(state.dayData);
+  render();
+}
+
+async function getExerciseHistory(exId) {
+  const all = await dbGetAll();
+  return all
+    .filter(d => d.workoutLog && d.workoutLog[exId] && d.workoutLog[exId].length > 0)
+    .map(d => {
+      const sets = d.workoutLog[exId];
+      const maxWeight = Math.max(...sets.map(s => parseFloat(s.weight) || 0));
+      return { date: d.date, weight: maxWeight, sets: sets };
+    })
+    .filter(d => d.weight > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function getLastSession(exId) {
+  // Find the most recent logged data for this exercise from loaded history
+  if (!state._workoutHistory) return null;
+  const hist = state._workoutHistory.filter(d =>
+    d.workoutLog && d.workoutLog[exId] && d.workoutLog[exId].length > 0 && d.date !== dateStr(state.date)
+  );
+  if (hist.length === 0) return null;
+  hist.sort((a, b) => b.date.localeCompare(a.date));
+  return hist[0].workoutLog[exId];
+}
+
+async function loadWorkoutHistory() {
+  state._workoutHistory = await dbGetAll();
 }
 
 // ── Shopping Actions ──
@@ -976,6 +1204,49 @@ function positionNowMarker() {
   if (label) {
     label.textContent = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
   }
+}
+
+// ── Workout Chart ──
+async function renderWorkoutChart() {
+  const chartBox = document.getElementById("wo-chart");
+  if (!chartBox) return;
+  const exId = state.woChartEx || "";
+  if (!exId) { chartBox.innerHTML = ""; return; }
+
+  const history = await getExerciseHistory(exId);
+  if (history.length < 2) {
+    chartBox.innerHTML = `<div style="color:var(--text3);text-align:center;padding:20px;font-size:13px">צריך לפחות 2 אימונים לגרף</div>`;
+    return;
+  }
+
+  const data = history.slice(-15);
+  const mn = Math.min(...data.map(d => d.weight)) - 5;
+  const mx = Math.max(...data.map(d => d.weight)) + 5;
+  const rng = mx - mn || 1;
+  const w = 520, h = 160;
+  const pts = data.map((d, i) => ({ x: (i / (data.length - 1)) * (w - 60) + 40, y: h - 20 - ((d.weight - mn) / rng) * (h - 40), ...d }));
+  const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+  const area = `${path} L${pts[pts.length - 1].x},${h - 20} L${pts[0].x},${h - 20} Z`;
+
+  let pathLen = 0;
+  for (let i = 1; i < pts.length; i++) pathLen += Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y);
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto">`;
+  [0, .25, .5, .75, 1].forEach(f => {
+    const y = h - 20 - f * (h - 40);
+    const v = (mn + f * rng).toFixed(0);
+    svg += `<line x1="40" y1="${y}" x2="${w - 20}" y2="${y}" stroke="rgba(255,255,255,0.05)"/>`;
+    svg += `<text x="35" y="${y + 4}" fill="#64748b" font-size="10" text-anchor="end" font-family="Heebo">${v}</text>`;
+  });
+  svg += `<defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/></linearGradient></defs>`;
+  svg += `<path d="${area}" fill="url(#wg)" class="chart-area-animated"/>`;
+  svg += `<path d="${path}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linejoin="round" class="chart-line-animated" style="stroke-dasharray:${pathLen};--path-length:${pathLen}"/>`;
+  pts.forEach((p, i) => {
+    svg += `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#0a0e17" stroke="#3b82f6" stroke-width="2" class="chart-dot-animated" style="animation-delay:${0.3 + i * 0.08}s"/>`;
+    if (i === 0 || i === pts.length - 1) svg += `<text x="${p.x}" y="${p.y - 10}" fill="#e2e8f0" font-size="11" text-anchor="middle" font-weight="600" font-family="Heebo" class="chart-dot-animated" style="animation-delay:${0.3 + i * 0.08}s">${p.weight}</text>`;
+  });
+  svg += `</svg>`;
+  chartBox.innerHTML = svg;
 }
 
 // ── Ripple Effect ──
