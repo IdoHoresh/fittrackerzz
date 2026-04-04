@@ -1,0 +1,15 @@
+services:
+  - type: web
+    runtime: node
+    name: fittrack-push
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: VAPID_PUBLIC_KEY
+        value: BBzsqZhI0Mb7UgBf2U9QahzTLl3MY_FnuWOUaMwIDvkfRQ3KWRbXuPuqNEIQgLJnjTAL0yTwqw1DkLpGaxeheGQ
+      - key: VAPID_PRIVATE_KEY
+        value: tKnqnHaVgjmd-2gV29p1wpgF02HH2QhCAtH1qWZ_gUg
+      - key: PORT
+        value: 10000
