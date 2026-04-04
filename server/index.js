@@ -69,7 +69,7 @@ app.get("/api/health", (req, res) => {
 app.post("/api/test", async (req, res) => {
   const subs = loadSubs();
   if (subs.length === 0) return res.json({ ok: false, error: "No subscribers" });
-  await sendToAll("🔔 בדיקת התראות", "ההתראות עובדות! FitTrack מחובר", "fittrack-test");
+  await sendToAll("🔔 בדיקת התראות", "", "fittrack-test");
   res.json({ ok: true, sent: subs.length });
 });
 
@@ -117,7 +117,7 @@ const SCHEDULE = [
 SCHEDULE.forEach(item => {
   cron.schedule(`${item.cron} * * *`, () => {
     console.log(`[cron] Sending: ${item.icon} ${item.label} (${item.display})`);
-    sendToAll(`${item.icon} ${item.label}`, item.display, `fittrack-${item.tag}`);
+    sendToAll(`${item.icon} ${item.label}`, "", `fittrack-${item.tag}`);
   }, { timezone: "Asia/Jerusalem" });
 });
 
@@ -132,7 +132,7 @@ cron.schedule("0 9 * * 0", () => {
     // This is a shopping Sunday (within the first week of a 2-week cycle)
     if (diffDays % 14 === 0) {
       console.log("[cron] Shopping day notification!");
-      sendToAll("🛒 יום קניות!", "הגיע הזמן להשלים את רשימת הקניות לשבועיים", "fittrack-shopping");
+      sendToAll("🛒 יום קניות!", "", "fittrack-shopping");
     }
   }
 }, { timezone: "Asia/Jerusalem" });
