@@ -763,12 +763,13 @@ function render() {
     html += `</div>`;
 
     // Steps
-    html += `<div class="steps-box" id="steps-box" onclick="syncSteps()">
+    html += `<div class="steps-box" id="steps-box">
       <span class="steps-icon">👟</span>
       <div class="steps-info">
-        <div class="steps-label">צעדים היום <span class="steps-sync" id="steps-sync">🔄</span></div>
+        <div class="steps-label">צעדים היום</div>
         <div class="steps-val" id="steps-val">—</div>
       </div>
+      <button class="steps-sync-btn" onclick="event.stopPropagation();syncSteps()">🔄 סנכרון</button>
     </div>`;
 
     // Water
@@ -1214,21 +1215,8 @@ async function loadSteps(ds) {
 }
 
 function syncSteps() {
-  const syncBtn = document.getElementById("steps-sync");
-  const stepsVal = document.getElementById("steps-val");
-  if (syncBtn) {
-    syncBtn.textContent = "⏳";
-    syncBtn.style.opacity = "1";
-  }
-  if (stepsVal) stepsVal.classList.add("number-bump");
-  loadSteps(dateStr(state.date)).then(() => {
-    setTimeout(() => {
-      if (syncBtn) {
-        syncBtn.textContent = "✓";
-        setTimeout(() => { syncBtn.textContent = "🔄"; syncBtn.style.opacity = ""; }, 1500);
-      }
-    }, 500);
-  });
+  // Open Shortcut to sync from Apple Health, then poll for result
+  window.location.href = "shortcuts://run-shortcut?name=Sync%20Steps";
 }
 
 // ── Now Marker ──
@@ -1449,9 +1437,4 @@ openDB().then(async () => {
       positionNowMarker();
     }
   }, 60000);
-  setInterval(() => {
-    if (state.view === "today" && document.visibilityState === "visible") {
-      loadSteps(dateStr(state.date));
-    }
-  }, 30000);
 });
