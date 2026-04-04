@@ -557,6 +557,25 @@ async function saveWeight() {
   state.dayData.weight = state.weightInput;
   state.weightInput = "";
   state.weightJustSaved = true;
+  state.editingWeight = false;
+  await dbPut(state.dayData);
+  await loadWeights();
+  render();
+}
+
+function editWeight() {
+  saveScrollPosition();
+  state.weightInput = state.dayData.weight || "";
+  state.editingWeight = true;
+  render();
+  setTimeout(() => { const el = document.getElementById("weightIn"); if (el) el.focus(); }, 50);
+}
+
+async function removeWeight() {
+  if (!confirm('למחוק את המשקל של היום?')) return;
+  saveScrollPosition();
+  state.dayData.weight = "";
+  state.editingWeight = false;
   await dbPut(state.dayData);
   await loadWeights();
   render();
@@ -773,12 +792,22 @@ function render() {
     // Weight input
     const weightSavedClass = state.weightJustSaved ? " weight-saved" : "";
     const savedIndicator = state.weightJustSaved ? `<span class="saved-check">✓</span>` : "";
-    html += `<div class="weight-box${weightSavedClass}">
-      <span style="font-size:18px">⚖️</span>
-      <input type="number" step="0.1" id="weightIn" placeholder="${d.weight ? d.weight + ' ק"ג ✓' : 'משקל בוקר'}" value="${state.weightInput}" oninput="state.weightInput=this.value;updateWeightBtn()">
-      <button class="weight-btn ${state.weightInput ? "ready" : "idle"}" id="weightBtn" onclick="saveWeight()">שמור</button>
-      ${savedIndicator}
-    </div>`;
+    if (d.weight && !state.editingWeight) {
+      html += `<div class="weight-box${weightSavedClass}">
+        <span style="font-size:18px">⚖️</span>
+        <span class="weight-display">${d.weight} ק"ג</span>
+        <button class="weight-edit-btn" onclick="editWeight()">✏️</button>
+        <button class="weight-delete-btn" onclick="removeWeight()">🗑️</button>
+        ${savedIndicator}
+      </div>`;
+    } else {
+      html += `<div class="weight-box${weightSavedClass}">
+        <span style="font-size:18px">⚖️</span>
+        <input type="number" step="0.1" id="weightIn" placeholder="משקל בוקר" value="${state.weightInput}" oninput="state.weightInput=this.value;updateWeightBtn()">
+        <button class="weight-btn ${state.weightInput ? "ready" : "idle"}" id="weightBtn" onclick="saveWeight()">שמור</button>
+        ${savedIndicator}
+      </div>`;
+    }
 
     // Timeline
     html += `<div class="timeline">`;
