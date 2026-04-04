@@ -834,7 +834,7 @@ function render() {
       const log = d.workoutLog || {};
 
       wo.groups.forEach((group, gIdx) => {
-        const groupLabel = group.type === "superset" ? `${group.tag} (superset)` : group.type === "cluster" ? `${group.tag} (cluster)` : group.tag;
+        const groupLabel = group.tag;
         html += `<div class="wo-group stagger-in" style="animation-delay:${gIdx * 0.06}s">`;
         html += `<div class="wo-group-header">${groupLabel}</div>`;
 
