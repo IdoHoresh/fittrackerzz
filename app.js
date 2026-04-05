@@ -543,34 +543,48 @@ function capturePhoto() {
   input.accept = "image/*";
   input.capture = "environment";
   input.onchange = async () => {
-    const file = input.files[0];
-    if (!file) return;
-    const blob = await compressImage(file, 1200, 0.7);
-    await photoAdd(blob, dateStr(effectiveNow()));
-    await loadPhotos();
-    state.photoIdx = Math.max(0, state.photos.length - 1);
-    render();
+    try {
+      const file = input.files[0];
+      if (!file) return;
+      const blob = await compressImage(file, 1200, 0.7);
+      await photoAdd(blob, dateStr(effectiveNow()));
+      await loadPhotos();
+      state.photoIdx = Math.max(0, state.photos.length - 1);
+      state.view = "photos";
+      render();
+    } catch (e) {
+      console.error("Photo capture error:", e);
+      alert("שגיאה בשמירת התמונה. נסה שוב.");
+    }
   };
   input.click();
 }
 
 function compressImage(file, maxSize, quality) {
-  return new Promise((res) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      let w = img.width, h = img.height;
-      if (w > maxSize || h > maxSize) {
-        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
-        else { w = Math.round(w * maxSize / h); h = maxSize; }
-      }
-      canvas.width = w;
-      canvas.height = h;
-      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-      canvas.toBlob(blob => res(blob), "image/jpeg", quality);
-      URL.revokeObjectURL(img.src);
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let w = img.width, h = img.height;
+        if (w > maxSize || h > maxSize) {
+          if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+          else { w = Math.round(w * maxSize / h); h = maxSize; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => {
+          if (blob) res(blob);
+          else rej(new Error("Canvas toBlob failed"));
+        }, "image/jpeg", quality);
+      };
+      img.onerror = () => rej(new Error("Image load failed"));
+      img.src = reader.result;
     };
-    img.src = URL.createObjectURL(file);
+    reader.onerror = () => rej(new Error("FileReader failed"));
+    reader.readAsDataURL(file);
   });
 }
 
