@@ -234,6 +234,12 @@ cron.schedule("0 9 * * 0", () => {
   }
 }, { timezone: "Asia/Jerusalem" });
 
+// ── Progress photo reminder: every Friday at 12:00 ──
+cron.schedule("0 12 * * 5", () => {
+  console.log("[cron] Progress photo reminder!");
+  sendToAll("📸 תמונת התקדמות", "יום שישי — הגיע הזמן לתעד את ההתקדמות!", "fittrack-photo");
+}, { timezone: "Asia/Jerusalem" });
+
 // ── Start ──
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, async () => {

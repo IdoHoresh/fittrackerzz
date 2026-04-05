@@ -269,7 +269,7 @@ function hasAerobic(ds) {
 
 // ── IndexedDB ──
 const DB_NAME = "fittrack";
-const DB_VER = 1;
+const DB_VER = 2;
 let db = null;
 
 function openDB() {
@@ -278,6 +278,10 @@ function openDB() {
     r.onupgradeneeded = e => {
       const d = e.target.result;
       if (!d.objectStoreNames.contains("days")) d.createObjectStore("days", { keyPath: "date" });
+      if (!d.objectStoreNames.contains("photos")) {
+        const ps = d.createObjectStore("photos", { keyPath: "id", autoIncrement: true });
+        ps.createIndex("date", "date", { unique: false });
+      }
     };
     r.onsuccess = e => { db = e.target.result; res(db); };
     r.onerror = e => rej(e);
@@ -314,6 +318,48 @@ function dbGetAll() {
   });
 }
 
+// ── Photos DB ──
+function photoAdd(blob, date) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction("photos", "readwrite");
+    const s = tx.objectStore("photos");
+    const r = s.put({ date, blob, timestamp: Date.now() });
+    r.onsuccess = () => res(r.result);
+    r.onerror = e => rej(e);
+  });
+}
+
+function photoGetAll() {
+  return new Promise((res, rej) => {
+    const tx = db.transaction("photos", "readonly");
+    const s = tx.objectStore("photos");
+    const r = s.getAll();
+    r.onsuccess = () => {
+      const photos = r.result || [];
+      photos.sort((a, b) => a.timestamp - b.timestamp);
+      res(photos);
+    };
+    r.onerror = e => rej(e);
+  });
+}
+
+function photoDelete(id) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction("photos", "readwrite");
+    const s = tx.objectStore("photos");
+    const r = s.delete(id);
+    r.onsuccess = () => res();
+    r.onerror = e => rej(e);
+  });
+}
+
+// Track object URLs for cleanup
+let _photoURLs = [];
+function revokePhotoURLs() {
+  _photoURLs.forEach(u => URL.revokeObjectURL(u));
+  _photoURLs = [];
+}
+
 // Scroll position saved at interaction time, survives across async renders
 let _pendingScroll = null;
 
@@ -347,7 +393,9 @@ let state = {
   notificationsEnabled: localStorage.getItem("fittrack_notif") === "true",
   shopping: loadShopping(),
   shopInput: "",
-  shopCat: "produce"
+  shopCat: "produce",
+  photos: [],
+  photoIdx: 0
 };
 
 // ── Push Notifications (server-based) ──
@@ -483,6 +531,60 @@ async function saveDay() {
   await calculateStreak();
   render();
   checkAchievements();
+}
+
+async function loadPhotos() {
+  state.photos = await photoGetAll();
+}
+
+function capturePhoto() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.capture = "environment";
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    const blob = await compressImage(file, 1200, 0.7);
+    await photoAdd(blob, dateStr(effectiveNow()));
+    await loadPhotos();
+    state.photoIdx = Math.max(0, state.photos.length - 1);
+    render();
+  };
+  input.click();
+}
+
+function compressImage(file, maxSize, quality) {
+  return new Promise((res) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => res(blob), "image/jpeg", quality);
+      URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function deletePhoto(id) {
+  if (!confirm("למחוק את התמונה?")) return;
+  await photoDelete(id);
+  await loadPhotos();
+  if (state.photoIdx >= state.photos.length) state.photoIdx = Math.max(0, state.photos.length - 1);
+  render();
+}
+
+function photoNav(dir) {
+  state.photoIdx = Math.max(1, Math.min(state.photos.length - 1, state.photoIdx + dir));
+  render();
 }
 
 async function loadWeights() {
@@ -716,6 +818,7 @@ function render() {
       <button class="tab ${state.view === "weight" ? "active" : ""}" onclick="setState('view','weight');loadWeights().then(render)">⚖️ משקל</button>
       <button class="tab ${state.view === "workout" ? "active" : ""}" onclick="setState('view','workout');loadWorkoutHistory().then(render)">🏋️ אימון</button>
       <button class="tab ${state.view === "shopping" ? "active" : ""}" onclick="setState('view','shopping')">🛒 קניות</button>
+      <button class="tab ${state.view === "photos" ? "active" : ""}" onclick="setState('view','photos');loadPhotos().then(render)">📸 תמונות</button>
     </div>
   </div>`;
 
@@ -759,6 +862,14 @@ function render() {
       html += `<div class="shop-reminder fade-up" onclick="setState('view','shopping')">
         <span class="shop-reminder-icon">🛒</span>
         <div><div class="shop-reminder-title">יום קניות!</div><div class="shop-reminder-sub">הגיע הזמן להשלים את רשימת הקניות לשבועיים</div></div>
+      </div>`;
+    }
+
+    // Friday photo reminder
+    if (new Date(ds).getDay() === 5) {
+      html += `<div class="photo-reminder fade-up" onclick="setState('view','photos');loadPhotos().then(()=>{capturePhoto()})">
+        <span class="photo-reminder-icon">📸</span>
+        <div><div class="photo-reminder-title">תמונת התקדמות</div><div class="photo-reminder-sub">יום שישי — הגיע הזמן לתעד את ההתקדמות!</div></div>
       </div>`;
     }
 
@@ -1120,6 +1231,57 @@ function render() {
 
       html += `</div>`;
     });
+
+    html += `</div>`;
+  } else if (state.view === "photos") {
+    revokePhotoURLs();
+    const photos = state.photos;
+    html += `<div class="photos-view">`;
+    html += `<h2>📸 תמונות התקדמות</h2>`;
+    html += `<button class="photo-capture-btn" onclick="capturePhoto()">📷 צלם תמונה חדשה</button>`;
+
+    if (photos.length === 0) {
+      html += `<div class="photo-empty"><div class="photo-empty-icon">📸</div><div class="photo-empty-title">עדיין אין תמונות</div><div class="photo-empty-sub">צלם את התמונה הראשונה שלך כדי לעקוב אחרי ההתקדמות</div></div>`;
+    } else if (photos.length === 1) {
+      const p = photos[0];
+      const url = URL.createObjectURL(p.blob);
+      _photoURLs.push(url);
+      html += `<div class="photo-single"><div class="photo-compare-item"><div class="photo-compare-label">תמונה ראשונה</div><img src="${url}" class="photo-compare-img" loading="lazy"><div class="photo-compare-date">${p.date.split("-").reverse().join("/")}</div></div></div>`;
+      html += `<div class="photo-hint">צלם עוד תמונה כדי לראות השוואה</div>`;
+    } else {
+      const idx = Math.max(1, Math.min(state.photoIdx, photos.length - 1));
+      const after = photos[idx];
+      const before = photos[idx - 1];
+      const urlBefore = URL.createObjectURL(before.blob);
+      const urlAfter = URL.createObjectURL(after.blob);
+      _photoURLs.push(urlBefore, urlAfter);
+
+      html += `<div class="photo-compare">
+        <div class="photo-compare-item"><div class="photo-compare-label">לפני</div><img src="${urlBefore}" class="photo-compare-img" loading="lazy"><div class="photo-compare-date">${before.date.split("-").reverse().join("/")}</div></div>
+        <div class="photo-compare-item"><div class="photo-compare-label">אחרי</div><img src="${urlAfter}" class="photo-compare-img" loading="lazy"><div class="photo-compare-date">${after.date.split("-").reverse().join("/")}</div></div>
+      </div>`;
+      html += `<div class="photo-compare-nav">
+        <button onclick="photoNav(-1)" ${idx <= 1 ? "disabled" : ""}>→</button>
+        <span>תמונה ${idx} מתוך ${photos.length - 1}</span>
+        <button onclick="photoNav(1)" ${idx >= photos.length - 1 ? "disabled" : ""}>←</button>
+      </div>`;
+    }
+
+    // Gallery grid
+    if (photos.length > 0) {
+      html += `<div class="photo-gallery-title">כל התמונות</div>`;
+      html += `<div class="photo-gallery">`;
+      photos.forEach(p => {
+        const url = URL.createObjectURL(p.blob);
+        _photoURLs.push(url);
+        html += `<div class="photo-gallery-item">
+          <img src="${url}" loading="lazy">
+          <button class="photo-gallery-delete" onclick="event.stopPropagation();deletePhoto(${p.id})">×</button>
+          <div class="photo-gallery-date">${p.date.split("-").reverse().join("/")}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
 
     html += `</div>`;
   }
@@ -1878,12 +2040,26 @@ function fireStreakStars(badgeEl) {
 openDB().then(async () => {
   await loadDay();
   await loadWeights();
+  await loadPhotos();
   await calculateStreak();
   render();
   initSwipe();
   initRipple();
   ensurePushSubscription();
   checkAchievements();
+
+  // Friday photo prompt — show once per day
+  const today = dateStr(effectiveNow());
+  const lastPhotoPrompt = localStorage.getItem("fittrack_photo_prompt");
+  if (new Date(today).getDay() === 5 && lastPhotoPrompt !== today) {
+    localStorage.setItem("fittrack_photo_prompt", today);
+    setTimeout(() => {
+      if (confirm("📸 יום שישי — הגיע הזמן לצלם תמונת התקדמות!\n\nלצלם עכשיו?")) {
+        state.view = "photos";
+        loadPhotos().then(() => { capturePhoto(); });
+      }
+    }, 1500);
+  }
 
   // Refresh data when app comes back to foreground
   document.addEventListener("visibilitychange", () => {
