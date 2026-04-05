@@ -874,9 +874,15 @@ function render() {
 
   // Header — rendered into permanent #header-root
   const bellIcon = state.notificationsEnabled ? "🔔" : "🔕";
+  const hdrUnlocked = loadUnlocked();
+  const hdrLvl = getPlayerLevel(hdrUnlocked);
   const headerHtml = `<div class="header-inner">
     <div class="header-top">
       <button class="notif-toggle ${state.notificationsEnabled ? "on" : ""}" onclick="toggleNotifications()" title="התראות">${bellIcon}</button>
+      <button class="header-level" onclick="state.view='today';state.showAchievements=true;loadDay();" title="הישגים">
+        <span class="header-level-badge">Lv.${hdrLvl.level}</span>
+        <span class="header-level-name">${hdrLvl.name}</span>
+      </button>
       <div class="logo"><span>FIT</span><span>TRACK</span></div>
     </div>
     <div class="tabs">
