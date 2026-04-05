@@ -120,53 +120,104 @@ const WORKOUTS = {
 };
 
 // ── Achievements ──
+// Rarity: bronze=10xp, silver=25xp, gold=50xp, diamond=100xp
 const ACHIEVEMENTS = [
   // Consistency
-  { id: "streak-3", cat: "consistency", icon: "🔥", title: "התחלה חזקה", desc: "רצף של 3 ימים", target: 3, progress: d => d.streak, check: d => d.streak >= 3 },
-  { id: "streak-7", cat: "consistency", icon: "🔥", title: "לוחם שבועי", desc: "רצף של 7 ימים", target: 7, progress: d => d.streak, check: d => d.streak >= 7 },
-  { id: "streak-14", cat: "consistency", icon: "🔥", title: "חיה של שבועיים", desc: "רצף של 14 ימים", target: 14, progress: d => d.streak, check: d => d.streak >= 14 },
-  { id: "streak-30", cat: "consistency", icon: "🔥", title: "מכונה חודשית", desc: "רצף של 30 ימים", target: 30, progress: d => d.streak, check: d => d.streak >= 30 },
-  { id: "streak-60", cat: "consistency", icon: "🔥", title: "רצון ברזל", desc: "רצף של 60 ימים", target: 60, progress: d => d.streak, check: d => d.streak >= 60 },
-  { id: "streak-100", cat: "consistency", icon: "🔥", title: "בלתי ניתן לעצירה", desc: "רצף של 100 ימים", target: 100, progress: d => d.streak, check: d => d.streak >= 100 },
+  { id: "streak-3", cat: "consistency", icon: "🔥", title: "התחלה חזקה", desc: "רצף של 3 ימים", target: 3, progress: d => d.streak, check: d => d.streak >= 3, rarity: "bronze", xp: 10 },
+  { id: "streak-7", cat: "consistency", icon: "🔥", title: "לוחם שבועי", desc: "רצף של 7 ימים", target: 7, progress: d => d.streak, check: d => d.streak >= 7, rarity: "silver", xp: 25 },
+  { id: "streak-14", cat: "consistency", icon: "🔥", title: "חיה של שבועיים", desc: "רצף של 14 ימים", target: 14, progress: d => d.streak, check: d => d.streak >= 14, rarity: "silver", xp: 25 },
+  { id: "streak-30", cat: "consistency", icon: "🔥", title: "מכונה חודשית", desc: "רצף של 30 ימים", target: 30, progress: d => d.streak, check: d => d.streak >= 30, rarity: "gold", xp: 50 },
+  { id: "streak-60", cat: "consistency", icon: "🔥", title: "רצון ברזל", desc: "רצף של 60 ימים", target: 60, progress: d => d.streak, check: d => d.streak >= 60, rarity: "gold", xp: 50 },
+  { id: "streak-100", cat: "consistency", icon: "🔥", title: "בלתי ניתן לעצירה", desc: "רצף של 100 ימים", target: 100, progress: d => d.streak, check: d => d.streak >= 100, rarity: "diamond", xp: 100 },
   // כוח
-  { id: "first-workout", cat: "strength", icon: "💪", title: "יום ראשון", desc: "תעד את האימון הראשון", target: 1, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 1 },
-  { id: "workouts-2", cat: "strength", icon: "💪", title: "חוזר לעוד", desc: "2 אימונים", target: 2, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 2 },
-  { id: "workouts-5", cat: "strength", icon: "💪", title: "שבוע ראשון בחדר", desc: "5 אימונים", target: 5, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 5 },
-  { id: "first-pr", cat: "strength", icon: "🏆", title: "דם ראשון", desc: "שבור שיא אישי ראשון", target: 1, progress: d => d.totalPRs, check: d => d.totalPRs >= 1 },
-  { id: "pr-5", cat: "strength", icon: "🏆", title: "צייד שיאים", desc: "5 שיאים אישיים", target: 5, progress: d => d.totalPRs, check: d => d.totalPRs >= 5 },
-  { id: "pr-10", cat: "strength", icon: "🏆", title: "מכונת שיאים", desc: "10 שיאים אישיים", target: 10, progress: d => d.totalPRs, check: d => d.totalPRs >= 10 },
-  { id: "pr-25", cat: "strength", icon: "🏆", title: "אגדת שיאים", desc: "25 שיאים אישיים", target: 25, progress: d => d.totalPRs, check: d => d.totalPRs >= 25 },
+  { id: "first-workout", cat: "strength", icon: "💪", title: "יום ראשון", desc: "תעד את האימון הראשון", target: 1, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 1, rarity: "bronze", xp: 10 },
+  { id: "workouts-2", cat: "strength", icon: "💪", title: "חוזר לעוד", desc: "2 אימונים", target: 2, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 2, rarity: "bronze", xp: 10 },
+  { id: "workouts-5", cat: "strength", icon: "💪", title: "שבוע ראשון בחדר", desc: "5 אימונים", target: 5, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 5, rarity: "silver", xp: 25 },
+  { id: "first-pr", cat: "strength", icon: "🏆", title: "דם ראשון", desc: "שבור שיא אישי ראשון", target: 1, progress: d => d.totalPRs, check: d => d.totalPRs >= 1, rarity: "bronze", xp: 10 },
+  { id: "pr-5", cat: "strength", icon: "🏆", title: "צייד שיאים", desc: "5 שיאים אישיים", target: 5, progress: d => d.totalPRs, check: d => d.totalPRs >= 5, rarity: "silver", xp: 25 },
+  { id: "pr-10", cat: "strength", icon: "🏆", title: "מכונת שיאים", desc: "10 שיאים אישיים", target: 10, progress: d => d.totalPRs, check: d => d.totalPRs >= 10, rarity: "gold", xp: 50 },
+  { id: "pr-25", cat: "strength", icon: "🏆", title: "אגדת שיאים", desc: "25 שיאים אישיים", target: 25, progress: d => d.totalPRs, check: d => d.totalPRs >= 25, rarity: "diamond", xp: 100 },
   // צעדים
-  { id: "steps-3k", cat: "steps", icon: "👟", title: "צעדים ראשונים", desc: "3,000 צעדים ביום", target: 3000, progress: d => d.todaySteps, check: d => d.todaySteps >= 3000 },
-  { id: "steps-5k", cat: "steps", icon: "👟", title: "מתחילים לזוז", desc: "5,000 צעדים ביום", target: 5000, progress: d => d.todaySteps, check: d => d.todaySteps >= 5000 },
-  { id: "steps-7k", cat: "steps", icon: "👟", title: "הולך יפה", desc: "7,000 צעדים ביום", target: 7000, progress: d => d.todaySteps, check: d => d.todaySteps >= 7000 },
-  { id: "steps-10k", cat: "steps", icon: "👟", title: "אלוף הצעדים", desc: "10,000 צעדים ביום", target: 10000, progress: d => d.todaySteps, check: d => d.todaySteps >= 10000 },
-  { id: "steps-15k", cat: "steps", icon: "👟", title: "רץ הכביש", desc: "15,000 צעדים ביום", target: 15000, progress: d => d.todaySteps, check: d => d.todaySteps >= 15000 },
+  { id: "steps-3k", cat: "steps", icon: "👟", title: "צעדים ראשונים", desc: "3,000 צעדים ביום", target: 3000, progress: d => d.todaySteps, check: d => d.todaySteps >= 3000, rarity: "bronze", xp: 10 },
+  { id: "steps-5k", cat: "steps", icon: "👟", title: "מתחילים לזוז", desc: "5,000 צעדים ביום", target: 5000, progress: d => d.todaySteps, check: d => d.todaySteps >= 5000, rarity: "bronze", xp: 10 },
+  { id: "steps-7k", cat: "steps", icon: "👟", title: "הולך יפה", desc: "7,000 צעדים ביום", target: 7000, progress: d => d.todaySteps, check: d => d.todaySteps >= 7000, rarity: "silver", xp: 25 },
+  { id: "steps-10k", cat: "steps", icon: "👟", title: "אלוף הצעדים", desc: "10,000 צעדים ביום", target: 10000, progress: d => d.todaySteps, check: d => d.todaySteps >= 10000, rarity: "gold", xp: 50 },
+  { id: "steps-15k", cat: "steps", icon: "👟", title: "רץ הכביש", desc: "15,000 צעדים ביום", target: 15000, progress: d => d.todaySteps, check: d => d.todaySteps >= 15000, rarity: "diamond", xp: 100 },
   // משקל — תיעוד
-  { id: "weight-first", cat: "weight", icon: "⚖️", title: "בדיקת משקל", desc: "תעד משקל ראשון", target: 1, progress: d => d.weightDays, check: d => d.weightDays >= 1 },
-  { id: "weight-3", cat: "weight", icon: "⚖️", title: "שלושה ימים", desc: "תעד משקל 3 ימים", target: 3, progress: d => d.weightDays, check: d => d.weightDays >= 3 },
-  { id: "weight-7", cat: "weight", icon: "⚖️", title: "שבוע על המשקל", desc: "תעד משקל 7 ימים", target: 7, progress: d => d.weightDays, check: d => d.weightDays >= 7 },
-  { id: "weight-14", cat: "weight", icon: "⚖️", title: "שבועיים על המשקל", desc: "תעד משקל 14 ימים", target: 14, progress: d => d.weightDays, check: d => d.weightDays >= 14 },
-  { id: "weight-30", cat: "weight", icon: "⚖️", title: "עוקב עקבי", desc: "תעד משקל 30 ימים", target: 30, progress: d => d.weightDays, check: d => d.weightDays >= 30 },
+  { id: "weight-first", cat: "weight", icon: "⚖️", title: "בדיקת משקל", desc: "תעד משקל ראשון", target: 1, progress: d => d.weightDays, check: d => d.weightDays >= 1, rarity: "bronze", xp: 10 },
+  { id: "weight-3", cat: "weight", icon: "⚖️", title: "שלושה ימים", desc: "תעד משקל 3 ימים", target: 3, progress: d => d.weightDays, check: d => d.weightDays >= 3, rarity: "bronze", xp: 10 },
+  { id: "weight-7", cat: "weight", icon: "⚖️", title: "שבוע על המשקל", desc: "תעד משקל 7 ימים", target: 7, progress: d => d.weightDays, check: d => d.weightDays >= 7, rarity: "silver", xp: 25 },
+  { id: "weight-14", cat: "weight", icon: "⚖️", title: "שבועיים על המשקל", desc: "תעד משקל 14 ימים", target: 14, progress: d => d.weightDays, check: d => d.weightDays >= 14, rarity: "silver", xp: 25 },
+  { id: "weight-30", cat: "weight", icon: "⚖️", title: "עוקב עקבי", desc: "תעד משקל 30 ימים", target: 30, progress: d => d.weightDays, check: d => d.weightDays >= 30, rarity: "gold", xp: 50 },
   // משקל — ירידה
-  { id: "lose-0.5", cat: "weight", icon: "🔻", title: "ההתחלה", desc: "ירדת חצי קילו", target: 0.5, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 0.5 },
-  { id: "lose-1", cat: "weight", icon: "🔻", title: "קילו ראשון", desc: "ירדת קילו", target: 1, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 1 },
-  { id: "lose-2", cat: "weight", icon: "🔻", title: "בדרך הנכונה", desc: "ירדת 2 קילו", target: 2, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 2 },
-  { id: "lose-3", cat: "weight", icon: "🔻", title: "שלושה למטה", desc: "ירדת 3 קילו", target: 3, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 3 },
-  { id: "lose-5", cat: "weight", icon: "🏅", title: "יעד הושג!", desc: "ירדת 5 קילו", target: 5, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 5 },
+  { id: "lose-0.5", cat: "weight", icon: "🔻", title: "ההתחלה", desc: "ירדת חצי קילו", target: 0.5, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 0.5, rarity: "bronze", xp: 10 },
+  { id: "lose-1", cat: "weight", icon: "🔻", title: "קילו ראשון", desc: "ירדת קילו", target: 1, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 1, rarity: "silver", xp: 25 },
+  { id: "lose-2", cat: "weight", icon: "🔻", title: "בדרך הנכונה", desc: "ירדת 2 קילו", target: 2, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 2, rarity: "silver", xp: 25 },
+  { id: "lose-3", cat: "weight", icon: "🔻", title: "שלושה למטה", desc: "ירדת 3 קילו", target: 3, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 3, rarity: "gold", xp: 50 },
+  { id: "lose-5", cat: "weight", icon: "🏅", title: "יעד הושג!", desc: "ירדת 5 קילו", target: 5, unit: "kg", progress: d => Math.round(d.weightLost * 10) / 10, check: d => d.weightLost >= 5, rarity: "diamond", xp: 100 },
   // תזונה
-  { id: "meals-half", cat: "nutrition", icon: "🥗", title: "חצי יום", desc: "השלם 5 משימות ביום", target: 1, progress: d => d.halfDays, check: d => d.halfDays >= 1 },
-  { id: "meals-perfect", cat: "nutrition", icon: "🥗", title: "יום מושלם", desc: "השלם את כל 10 המשימות", target: 1, progress: d => d.perfectDays, check: d => d.perfectDays >= 1 },
-  { id: "meals-perfect-3", cat: "nutrition", icon: "🥗", title: "שלושה מושלמים", desc: "3 ימים מושלמים", target: 3, progress: d => d.perfectDays, check: d => d.perfectDays >= 3 },
-  { id: "meals-week", cat: "nutrition", icon: "🥗", title: "שבוע מלא", desc: "7 ימים מושלמים", target: 7, progress: d => d.perfectDays, check: d => d.perfectDays >= 7 },
-  { id: "meals-50", cat: "nutrition", icon: "🥗", title: "גיבור חצי הדרך", desc: "50 ימים מושלמים", target: 50, progress: d => d.perfectDays, check: d => d.perfectDays >= 50 },
-  { id: "meals-100", cat: "nutrition", icon: "🥗", title: "מועדון המאה", desc: "100 ימים מושלמים", target: 100, progress: d => d.perfectDays, check: d => d.perfectDays >= 100 },
+  { id: "meals-half", cat: "nutrition", icon: "🥗", title: "חצי יום", desc: "השלם 5 משימות ביום", target: 1, progress: d => d.halfDays, check: d => d.halfDays >= 1, rarity: "bronze", xp: 10 },
+  { id: "meals-perfect", cat: "nutrition", icon: "🥗", title: "יום מושלם", desc: "השלם את כל 10 המשימות", target: 1, progress: d => d.perfectDays, check: d => d.perfectDays >= 1, rarity: "bronze", xp: 10 },
+  { id: "meals-perfect-3", cat: "nutrition", icon: "🥗", title: "שלושה מושלמים", desc: "3 ימים מושלמים", target: 3, progress: d => d.perfectDays, check: d => d.perfectDays >= 3, rarity: "silver", xp: 25 },
+  { id: "meals-week", cat: "nutrition", icon: "🥗", title: "שבוע מלא", desc: "7 ימים מושלמים", target: 7, progress: d => d.perfectDays, check: d => d.perfectDays >= 7, rarity: "silver", xp: 25 },
+  { id: "meals-50", cat: "nutrition", icon: "🥗", title: "גיבור חצי הדרך", desc: "50 ימים מושלמים", target: 50, progress: d => d.perfectDays, check: d => d.perfectDays >= 50, rarity: "gold", xp: 50 },
+  { id: "meals-100", cat: "nutrition", icon: "🥗", title: "מועדון המאה", desc: "100 ימים מושלמים", target: 100, progress: d => d.perfectDays, check: d => d.perfectDays >= 100, rarity: "diamond", xp: 100 },
   // אבני דרך
-  { id: "workouts-10", cat: "milestones", icon: "🎯", title: "רק מתחילים", desc: "10 אימונים", target: 10, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 10 },
-  { id: "workouts-50", cat: "milestones", icon: "🎯", title: "חולה חדר כושר", desc: "50 אימונים", target: 50, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 50 },
-  { id: "workouts-100", cat: "milestones", icon: "🎯", title: "ותיק הברזל", desc: "100 אימונים", target: 100, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 100 },
-  { id: "app-30", cat: "milestones", icon: "📅", title: "חודש ראשון", desc: "שימוש באפליקציה 30 ימים", target: 30, progress: d => d.totalDays, check: d => d.totalDays >= 30 }
+  { id: "workouts-10", cat: "milestones", icon: "🎯", title: "רק מתחילים", desc: "10 אימונים", target: 10, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 10, rarity: "silver", xp: 25 },
+  { id: "workouts-50", cat: "milestones", icon: "🎯", title: "חולה חדר כושר", desc: "50 אימונים", target: 50, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 50, rarity: "gold", xp: 50 },
+  { id: "workouts-100", cat: "milestones", icon: "🎯", title: "ותיק הברזל", desc: "100 אימונים", target: 100, progress: d => d.totalWorkouts, check: d => d.totalWorkouts >= 100, rarity: "diamond", xp: 100 },
+  { id: "app-30", cat: "milestones", icon: "📅", title: "חודש ראשון", desc: "שימוש באפליקציה 30 ימים", target: 30, progress: d => d.totalDays, check: d => d.totalDays >= 30, rarity: "gold", xp: 50 }
 ];
+
+// XP Level system
+const LEVELS = [
+  { level: 1, name: "מתחיל", xp: 0 },
+  { level: 2, name: "פעיל", xp: 50 },
+  { level: 3, name: "מתמיד", xp: 120 },
+  { level: 4, name: "חזק", xp: 220 },
+  { level: 5, name: "אלוף", xp: 350 },
+  { level: 6, name: "מכונה", xp: 500 },
+  { level: 7, name: "אגדה", xp: 700 },
+  { level: 8, name: "טיטאן", xp: 950 },
+  { level: 9, name: "אל הכושר", xp: 1200 },
+  { level: 10, name: "בלתי ניתן לעצירה", xp: 1500 }
+];
+
+const RARITY_COLORS = { bronze: "#cd7f32", silver: "#c0c0c0", gold: "#ffd700", diamond: "#b9f2ff" };
+const RARITY_LABELS = { bronze: "ארד", silver: "כסף", gold: "זהב", diamond: "יהלום" };
+
+function getPlayerLevel(unlocked) {
+  const totalXP = ACHIEVEMENTS.filter(a => unlocked[a.id]).reduce((sum, a) => sum + a.xp, 0);
+  let current = LEVELS[0];
+  for (const lvl of LEVELS) {
+    if (totalXP >= lvl.xp) current = lvl;
+    else break;
+  }
+  const nextLvl = LEVELS[current.level] || null;
+  const xpForNext = nextLvl ? nextLvl.xp - totalXP : 0;
+  const pctToNext = nextLvl ? Math.round(((totalXP - current.xp) / (nextLvl.xp - current.xp)) * 100) : 100;
+  return { ...current, totalXP, xpForNext, pctToNext, nextName: nextLvl ? nextLvl.name : null };
+}
+
+// Daily challenges
+const DAILY_CHALLENGES = [
+  { id: "dc-steps-5k", desc: "הגע ל-5,000 צעדים היום", icon: "👟", check: d => d.todaySteps >= 5000 },
+  { id: "dc-steps-8k", desc: "הגע ל-8,000 צעדים היום", icon: "👟", check: d => d.todaySteps >= 8000 },
+  { id: "dc-perfect", desc: "השלם את כל 10 המשימות היום", icon: "⭐", check: d => d.todayCompleted >= 10 },
+  { id: "dc-7tasks", desc: "השלם לפחות 7 משימות היום", icon: "📋", check: d => d.todayCompleted >= 7 },
+  { id: "dc-weight", desc: "תעד את המשקל שלך היום", icon: "⚖️", check: d => d.todayWeight },
+  { id: "dc-workout", desc: "תעשה אימון היום", icon: "💪", check: d => d.todayWorkout },
+  { id: "dc-water", desc: "שתה לפחות 3 ליטר מים היום", icon: "💧", check: () => false },
+  { id: "dc-early", desc: "השלם את משימת ההשכמה", icon: "☀️", check: d => d.todayFirstDone }
+];
+
+function getDailyChallenge() {
+  const today = dateStr(effectiveNow());
+  // Use date as seed for consistent daily selection
+  const seed = today.split("-").join("").slice(-4);
+  const idx = parseInt(seed) % DAILY_CHALLENGES.length;
+  return DAILY_CHALLENGES[idx];
+}
 
 const ACH_CATS = [
   { id: "consistency", label: "עקביות", icon: "🔥" },
@@ -395,7 +446,8 @@ let state = {
   shopInput: "",
   shopCat: "produce",
   photos: [],
-  photoIdx: 0
+  photoIdx: 0,
+  achFilter: "all"
 };
 
 // ── Push Notifications (server-based) ──
@@ -1006,6 +1058,9 @@ function render() {
     const unlockedCount = ACHIEVEMENTS.filter(a => unlocked[a.id]).length;
     const totalAch = ACHIEVEMENTS.length;
     const achPct = Math.round((unlockedCount / totalAch) * 100);
+    const playerLvl = getPlayerLevel(unlocked);
+    const achData = state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, halfDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), weightLost: 0, todaySteps: 0, totalDays: 0, todayCompleted: 0, todayWeight: false, todayWorkout: false, todayFirstDone: false };
+
     html += `<div class="ach-section">
       <div class="ach-summary" onclick="state.showAchievements=!state.showAchievements;render()">
         <div class="ach-summary-left">
@@ -1017,9 +1072,72 @@ function render() {
       <div class="ach-summary-bar"><div class="ach-summary-fill" style="width:${achPct}%"></div></div>`;
 
     if (state.showAchievements) {
+      // Stats dashboard
+      html += `<div class="ach-stats">
+        <div class="ach-stat-card ach-level-card">
+          <div class="ach-level-badge">Lv.${playerLvl.level}</div>
+          <div class="ach-level-name">${playerLvl.name}</div>
+          <div class="ach-level-xp">${playerLvl.totalXP} XP</div>
+          <div class="ach-level-bar"><div class="ach-level-fill" style="width:${playerLvl.pctToNext}%"></div></div>
+          ${playerLvl.nextName ? `<div class="ach-level-next">${playerLvl.xpForNext} XP לרמה הבאה (${playerLvl.nextName})</div>` : `<div class="ach-level-next">רמה מקסימלית! 👑</div>`}
+        </div>
+        <div class="ach-stat-row">
+          <div class="ach-stat-item"><span class="ach-stat-val">${achData.streak}</span><span class="ach-stat-label">🔥 רצף</span></div>
+          <div class="ach-stat-item"><span class="ach-stat-val">${achData.totalWorkouts}</span><span class="ach-stat-label">💪 אימונים</span></div>
+          <div class="ach-stat-item"><span class="ach-stat-val">${achData.totalPRs}</span><span class="ach-stat-label">🏆 שיאים</span></div>
+          <div class="ach-stat-item"><span class="ach-stat-val">${achData.totalDays}</span><span class="ach-stat-label">📅 ימים</span></div>
+        </div>
+      </div>`;
+
+      // Daily challenge
+      const dc = getDailyChallenge();
+      const dcDone = dc.check(achData);
+      const dcCompleted = localStorage.getItem("fittrack_dc_" + dateStr(effectiveNow()));
+      if (dcDone && !dcCompleted) localStorage.setItem("fittrack_dc_" + dateStr(effectiveNow()), "1");
+      html += `<div class="ach-daily ${dcDone ? "ach-daily-done" : ""}">
+        <div class="ach-daily-header"><span>⚡ אתגר יומי</span>${dcDone ? '<span class="ach-daily-check">✓ הושלם!</span>' : ''}</div>
+        <div class="ach-daily-content"><span class="ach-daily-icon">${dc.icon}</span><span>${dc.desc}</span></div>
+      </div>`;
+
+      // "Next up" — closest to unlocking (top 2)
+      const almostThere = ACHIEVEMENTS
+        .filter(a => !unlocked[a.id] && a.progress)
+        .map(a => ({ ...a, pct: Math.min(a.progress(achData) / a.target, 0.99) }))
+        .sort((a, b) => b.pct - a.pct)
+        .slice(0, 2);
+
+      if (almostThere.length > 0) {
+        html += `<div class="ach-nextup-title">🎯 קרוב להישג</div>`;
+        almostThere.forEach(ach => {
+          const prog = Math.min(ach.progress(achData), ach.target);
+          const pct = Math.round(ach.pct * 100);
+          const rarityColor = RARITY_COLORS[ach.rarity];
+          const isAlmost = pct >= 80;
+          html += `<div class="ach-card ach-locked ach-nextup ${isAlmost ? "ach-almost" : ""}" style="border-color:${rarityColor}40">
+            <div class="ach-card-icon">${ach.icon}</div>
+            <div class="ach-card-info">
+              <div class="ach-card-title">${ach.title} ${isAlmost ? '<span class="ach-almost-badge">כמעט!</span>' : ''}</div>
+              <div class="ach-card-desc">${ach.desc}</div>
+              <div class="ach-card-bar"><div class="ach-card-fill" style="width:${pct}%;background:${rarityColor}"></div></div>
+              <div class="ach-card-prog">${prog}/${ach.target}${ach.unit ? " " + ach.unit : ""}</div>
+            </div>
+            <div class="ach-card-rarity" style="color:${rarityColor}">${RARITY_LABELS[ach.rarity]}</div>
+          </div>`;
+        });
+      }
+
+      // Category filter tabs
+      html += `<div class="ach-filters">
+        <button class="ach-filter ${state.achFilter === "all" ? "active" : ""}" onclick="state.achFilter='all';render()">הכל</button>`;
+      ACH_CATS.forEach(cat => {
+        html += `<button class="ach-filter ${state.achFilter === cat.id ? "active" : ""}" onclick="state.achFilter='${cat.id}';render()">${cat.icon}</button>`;
+      });
+      html += `</div>`;
+
+      // Filtered achievement list
       html += `<div class="ach-list">`;
-      const achData = state._achData || { streak: state.streak, totalWorkouts: 0, perfectDays: 0, halfDays: 0, weightDays: 0, totalPRs: parseInt(unlocked._prCount || "0"), weightLost: 0, todaySteps: 0, totalDays: 0 };
-      const allAchs = [...ACHIEVEMENTS].sort((a, b) => {
+      const filtered = state.achFilter === "all" ? ACHIEVEMENTS : ACHIEVEMENTS.filter(a => a.cat === state.achFilter);
+      const allAchs = [...filtered].sort((a, b) => {
         const aUnlocked = unlocked[a.id] ? 1 : 0;
         const bUnlocked = unlocked[b.id] ? 1 : 0;
         if (aUnlocked !== bUnlocked) return bUnlocked - aUnlocked;
@@ -1031,14 +1149,17 @@ function render() {
         const isUnlocked = !!unlocked[ach.id];
         const prog = isUnlocked ? ach.target : (ach.progress ? Math.min(ach.progress(achData), ach.target) : 0);
         const pct = Math.round((prog / ach.target) * 100);
-        html += `<div class="ach-card ${isUnlocked ? "ach-unlocked" : "ach-locked"}">
+        const rarityColor = RARITY_COLORS[ach.rarity];
+        const isAlmost = !isUnlocked && pct >= 80;
+        html += `<div class="ach-card ${isUnlocked ? "ach-unlocked" : "ach-locked"} ach-rarity-${ach.rarity} ${isAlmost ? "ach-almost" : ""}">
           <div class="ach-card-icon">${ach.icon}</div>
           <div class="ach-card-info">
-            <div class="ach-card-title">${ach.title}</div>
+            <div class="ach-card-title">${ach.title} ${isAlmost ? '<span class="ach-almost-badge">כמעט!</span>' : ''}</div>
             <div class="ach-card-desc">${ach.desc}</div>
-            ${!isUnlocked ? `<div class="ach-card-bar"><div class="ach-card-fill" style="width:${pct}%"></div></div>
-            <div class="ach-card-prog">${prog}/${ach.target}${ach.unit ? " " + ach.unit : ""}</div>` : `<div class="ach-card-date">הושג ${unlocked[ach.id]}</div>`}
+            ${!isUnlocked ? `<div class="ach-card-bar"><div class="ach-card-fill" style="width:${pct}%;background:${rarityColor}"></div></div>
+            <div class="ach-card-prog">${prog}/${ach.target}${ach.unit ? " " + ach.unit : ""}</div>` : `<div class="ach-card-date">הושג ${unlocked[ach.id]} · +${ach.xp} XP</div>`}
           </div>
+          <div class="ach-card-rarity" style="color:${rarityColor}">${RARITY_LABELS[ach.rarity]}</div>
         </div>`;
       });
       html += `</div>`;
@@ -1724,6 +1845,13 @@ async function getAchievementData() {
     todaySteps = data.steps || 0;
   } catch (e) {}
 
+  // Daily challenge data
+  const todayData = state.dayData || {};
+  const todayCompleted = Object.values(todayData.completed || {}).filter(Boolean).length;
+  const todayWeight = !!todayData.weight;
+  const todayWorkout = todayData.workoutLog && Object.keys(todayData.workoutLog).length > 0;
+  const todayFirstDone = !!(todayData.completed && todayData.completed[SCHEDULE[0].id]);
+
   return {
     streak: state.streak,
     totalWorkouts,
@@ -1733,7 +1861,11 @@ async function getAchievementData() {
     totalPRs,
     weightLost,
     todaySteps,
-    totalDays: all.length
+    totalDays: all.length,
+    todayCompleted,
+    todayWeight,
+    todayWorkout,
+    todayFirstDone
   };
 }
 
@@ -1767,24 +1899,36 @@ function incrementPRCount() {
 }
 
 function showAchievementToast(ach) {
-  const existing = document.querySelector(".ach-toast");
+  const existing = document.querySelector(".ach-popup-overlay");
   if (existing) existing.remove();
 
-  const toast = document.createElement("div");
-  toast.className = "ach-toast";
-  toast.innerHTML = `<div class="ach-toast-inner">
-    <span class="ach-toast-icon">${ach.icon}</span>
-    <div>
-      <div class="ach-toast-title">הישג חדש!</div>
-      <div class="ach-toast-name">${ach.title}</div>
+  const rarityColor = RARITY_COLORS[ach.rarity] || "#fff";
+  const rarityLabel = RARITY_LABELS[ach.rarity] || "";
+
+  const overlay = document.createElement("div");
+  overlay.className = "ach-popup-overlay";
+  overlay.onclick = () => { overlay.classList.remove("ach-popup-show"); setTimeout(() => overlay.remove(), 400); };
+  overlay.innerHTML = `<div class="ach-popup" onclick="event.stopPropagation()">
+    <div class="ach-popup-glow" style="background:${rarityColor}"></div>
+    <div class="ach-popup-icon">${ach.icon}</div>
+    <div class="ach-popup-label">הישג חדש!</div>
+    <div class="ach-popup-title">${ach.title}</div>
+    <div class="ach-popup-desc">${ach.desc}</div>
+    <div class="ach-popup-rarity" style="color:${rarityColor}">
+      <span class="ach-popup-rarity-dot" style="background:${rarityColor}"></span>
+      ${rarityLabel} · +${ach.xp} XP
     </div>
+    <button class="ach-popup-btn" onclick="this.closest('.ach-popup-overlay').classList.remove('ach-popup-show');setTimeout(()=>this.closest('.ach-popup-overlay').remove(),400)">יופי! 🎉</button>
   </div>`;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.classList.add("ach-toast-show"), 10);
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.classList.add("ach-popup-show"), 10);
+  // Auto-dismiss after 5 seconds
   setTimeout(() => {
-    toast.classList.remove("ach-toast-show");
-    setTimeout(() => toast.remove(), 400);
-  }, 3500);
+    if (overlay.parentNode) {
+      overlay.classList.remove("ach-popup-show");
+      setTimeout(() => overlay.remove(), 400);
+    }
+  }, 5000);
 }
 
 // ── Personal Records ──
