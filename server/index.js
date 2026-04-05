@@ -2,8 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const webpush = require("web-push");
 const cron = require("node-cron");
-const fs = require("fs");
-const path = require("path");
+const { Redis } = require("@upstash/redis");
 
 const app = express();
 
@@ -21,6 +20,12 @@ app.use(cors({
   }
 }));
 app.use(express.json());
+
+// Redis client — credentials from env vars only
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 // Rate limiting
 const rateMap = new Map();
@@ -55,18 +60,14 @@ if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
 
 webpush.setVapidDetails("mailto:fittrack@example.com", VAPID_PUBLIC, VAPID_PRIVATE);
 
-// Store subscriptions in a JSON file (simple persistence)
-const SUBS_FILE = path.join(__dirname, "subscriptions.json");
-
-function loadSubs() {
-  try {
-    if (fs.existsSync(SUBS_FILE)) return JSON.parse(fs.readFileSync(SUBS_FILE, "utf8"));
-  } catch (e) {}
-  return [];
+// Store subscriptions in Redis (persists across deploys)
+async function loadSubs() {
+  const subs = await redis.get("subscriptions");
+  return subs || [];
 }
 
-function saveSubs(subs) {
-  fs.writeFileSync(SUBS_FILE, JSON.stringify(subs, null, 2));
+async function saveSubs(subs) {
+  await redis.set("subscriptions", subs);
 }
 
 // ── Routes ──
@@ -75,53 +76,50 @@ app.get("/api/vapid-public-key", (req, res) => {
   res.json({ publicKey: VAPID_PUBLIC });
 });
 
-app.post("/api/subscribe", rateLimit(10, 60000), (req, res) => {
+app.post("/api/subscribe", rateLimit(10, 60000), async (req, res) => {
   const sub = req.body;
   if (!sub || !sub.endpoint) return res.status(400).json({ error: "Invalid subscription" });
 
-  const subs = loadSubs();
+  const subs = await loadSubs();
   // Avoid duplicates
   if (!subs.find(s => s.endpoint === sub.endpoint)) {
     subs.push(sub);
-    saveSubs(subs);
+    await saveSubs(subs);
     console.log(`[subscribe] New subscription added. Total: ${subs.length}`);
   }
   res.json({ ok: true });
 });
 
-app.post("/api/unsubscribe", rateLimit(10, 60000), (req, res) => {
+app.post("/api/unsubscribe", rateLimit(10, 60000), async (req, res) => {
   const { endpoint } = req.body;
   if (!endpoint) return res.status(400).json({ error: "Missing endpoint" });
 
-  let subs = loadSubs();
+  let subs = await loadSubs();
   subs = subs.filter(s => s.endpoint !== endpoint);
-  saveSubs(subs);
+  await saveSubs(subs);
   console.log(`[unsubscribe] Removed. Total: ${subs.length}`);
   res.json({ ok: true });
 });
 
 // Health check
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", subscribers: loadSubs().length });
+app.get("/api/health", async (req, res) => {
+  const subs = await loadSubs();
+  res.json({ status: "ok", subscribers: subs.length });
 });
 
 // ── Steps tracking ──
-const STEPS_FILE = path.join(__dirname, "steps.json");
-
-function loadSteps() {
-  try {
-    if (fs.existsSync(STEPS_FILE)) return JSON.parse(fs.readFileSync(STEPS_FILE, "utf8"));
-  } catch (e) {}
-  return {};
+async function loadSteps() {
+  const data = await redis.get("steps");
+  return data || {};
 }
 
-function saveSteps(data) {
-  fs.writeFileSync(STEPS_FILE, JSON.stringify(data, null, 2));
+async function saveSteps(data) {
+  await redis.set("steps", data);
 }
 
 // POST /api/steps — save steps for a date { date: "2026-04-04", steps: 8500 }
 // Also accepts GET for easy iOS Shortcut: /api/steps/save?date=2026-04-04&steps=8500
-function validateAndSaveSteps(date, steps, res) {
+async function validateAndSaveSteps(date, steps, res) {
   if (!date) date = new Date().toISOString().split("T")[0];
   const stepCount = parseInt(steps);
   if (isNaN(stepCount) || stepCount < 0 || stepCount > 500000) {
@@ -130,9 +128,9 @@ function validateAndSaveSteps(date, steps, res) {
   const parsed = new Date(date);
   if (isNaN(parsed)) return res.status(400).json({ error: "Invalid date" });
   const ds = parsed.toISOString().split("T")[0];
-  const data = loadSteps();
+  const data = await loadSteps();
   data[ds] = stepCount;
-  saveSteps(data);
+  await saveSteps(data);
   console.log(`[steps] ${ds}: ${stepCount}`);
   res.json({ ok: true, date: ds, steps: stepCount });
 }
@@ -146,8 +144,8 @@ app.get("/api/steps/save", rateLimit(30, 60000), (req, res) => {
 });
 
 // GET /api/steps?date=2026-04-04 or /api/steps?days=7
-app.get("/api/steps", rateLimit(60, 60000), (req, res) => {
-  const data = loadSteps();
+app.get("/api/steps", rateLimit(60, 60000), async (req, res) => {
+  const data = await loadSteps();
   if (req.query.date) {
     return res.json({ date: req.query.date, steps: data[req.query.date] || 0 });
   }
@@ -166,7 +164,7 @@ app.get("/api/steps", rateLimit(60, 60000), (req, res) => {
 
 // Test push — send a test notification to all subscribers
 app.post("/api/test", requireAuth, rateLimit(5, 60000), async (req, res) => {
-  const subs = loadSubs();
+  const subs = await loadSubs();
   if (subs.length === 0) return res.json({ ok: false, error: "No subscribers" });
   await sendToAll("🔔 בדיקת התראות", "", "fittrack-test");
   res.json({ ok: true, sent: subs.length });
@@ -174,7 +172,7 @@ app.post("/api/test", requireAuth, rateLimit(5, 60000), async (req, res) => {
 
 // ── Send notification to all subscribers ──
 async function sendToAll(title, body, tag) {
-  const subs = loadSubs();
+  const subs = await loadSubs();
   const expired = [];
 
   for (const sub of subs) {
@@ -193,7 +191,7 @@ async function sendToAll(title, body, tag) {
   // Clean up expired subscriptions
   if (expired.length > 0) {
     const cleaned = subs.filter(s => !expired.includes(s.endpoint));
-    saveSubs(cleaned);
+    await saveSubs(cleaned);
     console.log(`[cleanup] Removed ${expired.length} expired subscriptions`);
   }
 }
@@ -238,8 +236,10 @@ cron.schedule("0 9 * * 0", () => {
 
 // ── Start ──
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`FitTrack push server running on port ${PORT}`);
   console.log(`VAPID public key: ${VAPID_PUBLIC.substring(0, 20)}...`);
-  console.log(`Subscribers: ${loadSubs().length}`);
+  const subs = await loadSubs();
+  console.log(`Subscribers: ${subs.length}`);
+  console.log(`Storage: Upstash Redis`);
 });
