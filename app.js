@@ -472,6 +472,9 @@ async function loadDay() {
   const ds = dateStr(state.date);
   const data = await dbGet(ds);
   state.dayData = data || defaultDay(ds);
+  // Always recalculate workout type from cycle — START is the source of truth
+  state.dayData.workoutType = cycleType(ds);
+  state.dayData.hasAerobic = hasAerobic(ds);
   render();
 }
 
@@ -1221,18 +1224,6 @@ function toggleWorkoutPicker() {
   render();
 }
 
-// Reset workout type on all future saved days so they recalculate from the cycle
-async function resetFutureWorkoutTypes(afterDate) {
-  const allDays = await dbGetAll();
-  for (const day of allDays) {
-    if (day.date > afterDate) {
-      day.workoutType = cycleType(day.date);
-      day.hasAerobic = hasAerobic(day.date);
-      await dbPut(day);
-    }
-  }
-}
-
 function selectWorkoutType(type) {
   saveScrollPosition();
   state.showWorkoutPicker = false;
@@ -1249,7 +1240,6 @@ function selectWorkoutType(type) {
   state.dayData.workoutType = type;
   state.dayData.hasAerobic = hasAerobic(ds);
   saveDay();
-  resetFutureWorkoutTypes(ds);
 }
 
 function cycleWorkoutType() {
@@ -1274,7 +1264,6 @@ function cycleWorkoutType() {
   state.dayData.workoutType = next;
   state.dayData.hasAerobic = hasAerobic(ds);
   saveDay();
-  resetFutureWorkoutTypes(ds);
 }
 
 // ── Workout Actions ──
