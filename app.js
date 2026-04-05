@@ -1439,6 +1439,14 @@ async function loadSteps(ds) {
 
 function syncSteps() {
   window.location.href = "shortcuts://run-shortcut?name=Sync%20Steps";
+  // Poll for updated steps after shortcut runs
+  const ds = dateStr(state.date);
+  let attempts = 0;
+  const poll = setInterval(() => {
+    attempts++;
+    loadSteps(ds);
+    if (attempts >= 6) clearInterval(poll);
+  }, 3000);
 }
 
 // ── Now Marker ──
@@ -1892,10 +1900,17 @@ openDB().then(async () => {
     }
   });
 
-  // Update "now" marker every 60 seconds and steps every 30 seconds
+  // Update "now" marker every 60 seconds
   setInterval(() => {
     if (state.view === "today" && dateStr(state.date) === dateStr(effectiveNow())) {
       positionNowMarker();
     }
   }, 60000);
+
+  // Auto-refresh steps every 30 seconds
+  setInterval(() => {
+    if (state.view === "today") {
+      loadSteps(dateStr(state.date));
+    }
+  }, 30000);
 });
